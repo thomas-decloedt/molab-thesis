@@ -1,0 +1,35 @@
+\begin{table}[t]
+	\centering
+	%\setlength{\tabcolsep}{6pt} % Default is 6pt
+	\begin{tabular}{
+		l|S[table-format=2.0] S[table-format=2.0] S[table-format=2.0]|S[table-format=2.0] S[table-format=2.0] S[table-format=2.0]
+	}
+		\textbf{Templates} 
+					  & \multicolumn{3}{c|}{\textbf{1 Demonstration per Template}}
+					  & \multicolumn{3}{c}{\textbf{3 Demonstrations per Template}} \\
+					  
+					  & {$T$} & {$T \setminus \{ 2 \}$} & {$T \setminus \{ 6 \}$} 
+					  & {$T$} & {$T \setminus \{ 2 \}$} & {$T \setminus \{ 6 \}$} \\
+					  \hline
+
+		$T$ & 74 & 73             & 74             & 93  & 88             & 92 \\
+		\hline
+		1   & 65 & 71             & 69             & 98  & 99             & 97 \\
+		2   & 81 & \underline{38}     & 81             & 94  & \underline{37} & 96 \\
+		3   & 89 & 89             & 91             & 98  & 96             & 98 \\
+		4   & 76 & 74             & 79             & 93  & 91             & 94 \\
+		5   & 67 & 69             & 63             & 91  & 94             & 90 \\
+		6   & 79 & 75             & \uline{51} & 97  & 93             & \underline{56} \\
+		7   & 71 & 72             & 71             & 87  & 88             & 86 \\
+		8   & 72 & 82             & 83             & 100 & 100            & 95 \\
+
+	\end{tabular}
+
+	\caption{
+		Quality assessment of the synthetic dataset using \glsentryshort{bleu} scores expressed as percentages.
+		This evaluation compares the generated \glsentryshort{squall} queries to their corresponding ground truths,
+		including an analysis of queries generated with certain demonstrations excluded from the prompt's support set.
+	}
+
+	\label{table:synthetic_dataset_bleu}
+\end{table}

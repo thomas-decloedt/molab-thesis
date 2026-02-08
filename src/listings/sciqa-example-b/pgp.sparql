@@ -1,0 +1,12 @@
+SELECT DISTINCT ?model ?model_lbl WHERE {
+	?dataset a <Dataset>;
+		rdfs:label ?dataset_lbl .
+	FILTER(STR(?dataset_lbl) = 'SentEval')
+	?benchmark <has_dataset> ?dataset;
+		<Has_evaluation> ?eval .
+	?paper <has_benchmark> ?benchmark .
+	OPTIONAL {
+		?paper <has_model> ?model .
+		?model rdfs:label ?model_lbl .
+	}
+}

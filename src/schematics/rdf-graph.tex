@@ -1,0 +1,23 @@
+\begin{tikzpicture}[
+    node/.style={draw, rounded corners, align=center, minimum width=2.5cm, minimum height=1cm},
+    edge/.style={->, thick},
+    scale=0.6, transform shape
+]
+
+% Nodes
+\node[node, label=above:{$v_1$}] (v1) {\small \texttt{http://www.example.org/staffid/85740}};
+\node[node, below=2cm of v1, label=below:{$v_2$}] (v2) {};
+
+\node[node,  below left=2cm and 3cm of v2, label=below:{$v_3$}] (v3) {'Bedford'};
+\node[node,  below left=5cm and 0cm of v2, label=below:{$v_4$}] (v4) {'1501 Grant Avenue'};
+\node[node,  below right=5cm and 0cm of v2, label=below:{$v_5$}] (v5) {'01730'};
+\node[node,  below right=2cm and 3cm of v2, label=below:{$v_6$}] (v6) {'Massachusetts'};
+
+% Edges
+\draw[edge] (v1) -- node[midway, left] {\small \texttt{http://www.example.org/city}} (v2);
+\draw[edge] (v2) -- node[pos=0.85, left] {\small \texttt{http://www.example.org/address}} (v4);
+\draw[edge] (v2) -- node[midway, left=0.2cm] {\small \texttt{http://www.example.org/street}} (v3);
+\draw[edge] (v2) -- node[pos=0.85, right] {\small \texttt{http://www.example.org/postalCode}} (v5);
+\draw[edge] (v2) -- node[midway, right=0.2cm] {\small \texttt{http://www.example.org/state}} (v6);
+
+\end{tikzpicture}

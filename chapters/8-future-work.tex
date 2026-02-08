@@ -1,0 +1,59 @@
+\chapter*{Future Work}
+\chaptermark{Future Work}
+\addcontentsline{toc}{chapter}{Future Work}  
+\label{c:futureWork}
+
+This chapter outlines potential future research directions inspired by this work.
+These avenues are categorized into five key areas:
+\gls{ai} agent, \glsentrylong{da}, \glsentrylong{rag}, synthetic data generation, and linking.
+
+\section{AI Agent}
+
+Mo-Lab, as a proof-of-concept implementation of the proposed model reporting paradigm,
+is currently limited in its capabilities.
+Future research could explore incorporating the domain expert into a fully-fledged \gls{ai} agent,
+enabling interactive features such as dynamic feedback through a dialog between the stakeholder and the agent.
+This enhancement could facilitate iterative refinement of results, improving both usability and accuracy.
+Additionally, such an agent could respond to stakeholder requests in terms of analysis preferences,
+visualization formats, and other personalized requirements.
+
+The proposed text-to-\gls{sparql} pipeline, which includes the domain expert,
+could serve as a specialized subcomponent of the agent, focusing on text-to-\gls{sparql} tasks.
+Meanwhile, the general capabilities of a \gls{pllm}, such as ChatGPT, could be retained to handle broader interactions,
+ensuring a versatile and comprehensive \gls{ai} agent.
+
+\section{Domain Adaptation}
+
+A promising direction for future research is enriching the source domain data used to train the \gls{squall} expert.
+Since \gls{da} can be applied to a mixed source domain \cite{mansourDomainAdaptationMultiple2008},
+incorporating multiple \gls{qa} datasets (e.g., LC-QuAD 2.0, DBLP-QuAD, QALD-9-Plus, etc.)
+could enhance generalizability, improve practical applicability,
+and reduce training data requirements for the domain expert in the target domain.
+
+\section{Retrieval Augmented Generation}
+
+Evaluating the proposed approach on a diverse set of more varies and less homogeneous benchmarks is necessary,
+as the current experimentation could not yield conclusive results.
+For instance, replacing DBLP and DBLP-QuAD with \gls{orkg} and SciQA could provide valuable insights.
+While DBLP was initially considered but abandoned due to its size,
+revisiting it now can be justified given the promising results achieved.
+
+\section{Synthetic Data Generation}
+
+Further exploration of synthetic data generation techniques presents another exciting research avenue.
+Investigating methods to produce data that is more faithful, extensive,
+and varied across the domain could significantly enhance domain expert training.
+Additionally, this work focused on generating queries while assuming the availability of questions.
+Future research could explore techniques for simultaneously generating both queries and questions.
+Developing a framework for directly generating data from an ontology or \gls{kg} of a domain could also be valuable,
+particularly if it is practically applicable across real-world \gls{mbse} projects.
+
+\section{Linking}
+
+The linking component utilized in this work is a component separate from the remainder of the domain expert, 
+and it is non-neural.
+Exploring more advanced linkers that could leverage the constructed subgraph output during post-retrieval,
+might offer significant improvements.
+Neural approaches applicable in data-scarce scenarios, potentially through prompt engineering or \gls{da},
+represent another promising direction for future work.
+

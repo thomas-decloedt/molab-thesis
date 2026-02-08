@@ -1,0 +1,1 @@
+A <Model> is a <has_model> of a thing X and has a rdfs:label whose string matches 'Depth DDPPO' and X is a <has_paper> of a thing Y and a thing is a <has_code_link> of Y and if defined, what is the <has_code_link> of Y and has a rdfs:label?

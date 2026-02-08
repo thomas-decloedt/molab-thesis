@@ -1,0 +1,11 @@
+Vertices:
+1, model A
+2, Model
+3, model A's label
+4, benchmark
+5, dataset
+
+Edges:
+1, type, 2
+1, type, 3
+4, has dataset, 5

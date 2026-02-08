@@ -1,0 +1,26 @@
+\begin{figure}[ht]
+	\centering
+	\begin{tikzpicture}[scale=0.75, transform shape]
+		\tikzset{node distance = 30pt and 50pt}
+
+		\node[input_output]             (Q)   {Question};
+		\node[block, right=of Q]        (DE)  {Domain Expert};
+		\node[block, right=of DE]       (S2S) {Translator};
+		\node[block, right=of S2S]      (L)   {Linker};
+		\node[input_output, right=of L] (S)   {\glsentryshort{sparql}};
+
+		\draw[->] (Q)   -- (DE)  node[descr] {};
+		\draw[->] (DE)  -- (S2S) node[descr] {\glsentryshort{squall}};
+		\draw[->] (S2S) -- (L)   node[descr] {\glsentryshort{pgp}};
+		\draw[->] (L)   -- (S)   node[descr] {};
+
+		\node[below=of S2S, label={below:KG}] (KG) {\includesvg[width=1.5cm]{kg.svg}};
+
+		\draw[->]  (KG.west) -| (DE.south) node[descr] {};
+		\draw[<->] (KG.east) -| (L.south)  node[descr] {};
+
+	\end{tikzpicture}
+	\caption{Text-to-\glsentryshort{sparql} component.}
+	\label{fig:textToSparql}
+\end{figure}
+

@@ -1,0 +1,1 @@
+A <Dataset> is a <has_dataset> of a thing X and has a rdfs:label whose string matches 'SentEval' and X is a <has_benchmark> of a thing Y and a thing is a <has_evaluation> of X and if defined, what is a <has_model> of Y and has a rdfs:label?

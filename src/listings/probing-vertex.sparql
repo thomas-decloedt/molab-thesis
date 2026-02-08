@@ -1,0 +1,10 @@
+SELECT DISTINCT ?subject ?label
+WHERE {
+	?subject ?predicate ?label .
+	FILTER(
+		REGEX(?label, 'w_1', 'i')
+		|| REGEX(?label, 'w_2', 'i')
+		|| ...
+	)
+}
+LIMIT n_max_vertices

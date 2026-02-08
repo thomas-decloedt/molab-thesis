@@ -1,0 +1,1 @@
+What is the max of the <Has_value> of a thing X that is a <Has_evaluation> of a thing that (has <has_dataset> a <Dataset> that has rdfs:label 'Walker, walk (DMControl100k)') and is a <has_benchmark> of a thing that if defined, has a <has_model> and if defined, has a rdfs:label per the if defined, <Has_metric> Y of X and per the if defined, rdfs:label of Y?

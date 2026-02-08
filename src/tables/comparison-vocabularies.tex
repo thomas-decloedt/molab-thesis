@@ -1,0 +1,68 @@
+\begin{table*}[h]
+
+	\centering
+
+	\begin{tabular}{l|S[table-format=6.0]S[table-format=6.0]S[table-format=5.0]S[table-format=5.0]|r}
+
+		\textbf{Dataset}     & \textbf{Total} & \textbf{Train} & \textbf{Val} & \textbf{Test} & \textbf{Source} \\
+		\hline
+		\textbf{LC-QuAD}     & 5000     & 4000     & 500    & 500     & \cite{dialloComprehensiveEvaluationNeural2024} \\
+		\textbf{LC-QuAD 2.0} & 30225    & 21761    & 2418   & 6046    & \cite{dialloComprehensiveEvaluationNeural2024} \\
+		\textbf{DBNQA}       & 382794   & 306236   & 38279  & 38279   & \cite{dialloComprehensiveEvaluationNeural2024} \\
+		\textbf{SciQA}       & 2565     & 1795     & 257    & 513     & This work
+
+	\end{tabular}
+
+	\caption{
+		Number of samples of four datasets, broken down into training, validation, and test splits,
+		along with the overall totals.
+	}
+
+	\label{table:comparisonDatasets}
+\end{table*}
+
+\begin{table*}[h]
+
+	\centering
+
+	\begin{tabular}{l|S[table-format=6.0]S[table-format=6.0]S[table-format=5.0]S[table-format=5.0]S[table-format=4.0]|r}
+		\textbf{Dataset}            & \textbf{Total} & \textbf{Train} & \textbf{Val} & \textbf{Test} & \textbf{\glsentryshort{oov}} & \textbf{Source} \\
+		\hline
+		\textbf{LC-QuAD}            & 4751     & 4150     & 1068   & 1065    & 318                    & \cite{dialloComprehensiveEvaluationNeural2024} \\
+		\textbf{LC-QuAD 2.0}        & 34801    & 27949    & 5413   & 10993   & 7523                   & \cite{dialloComprehensiveEvaluationNeural2024} \\
+		\textbf{DBNQA}              & 157672   & 142985   & 36845  & 37130   & 7998                   & \cite{dialloComprehensiveEvaluationNeural2024} \\
+		\textbf{SciQA}              & 1347     & 1077     & 297    & 483     & 182                    & This work \\
+		\textbf{SciQA, \glspl{uri}} & 188      & 135      & 50     & 69      & 37                     & This work
+
+	\end{tabular}
+
+	\caption{
+		\glsentrylong{kb} vocabulary sizes.
+	}
+
+	\label{table:comparisonVocabularies}
+\end{table*}
+
+\begin{table*}[h]
+
+	\centering
+
+	\begin{tabular}{l|S[table-format=1.3]S[table-format=1.3]S[table-format=1.3]S[table-format=1.3]S[table-format=1.3]}
+
+		\textbf{Dataset}            & \textbf{Total}  & \textbf{Train} & \textbf{Val}     & \textbf{Test}    & \textbf{\glsentryshort{oov}} \\
+		\hline
+		\textbf{LC-QuAD}            & 0.950          &  1.038        &  2.136           &  2.130            &  0.071 \\
+		\textbf{LC-QuAD 2.0}        & 1.151          &  1.284        &  2.239           &  1.818          &  0.311 \\
+		\textbf{DBNQA}              & 0.412          &  0.467        &  0.963           &  0.970            &  0.023 \\
+		\textbf{SciQA}              & 0.525          &  0.600        &  1.156           &  0.942          &  0.089 \\
+		\textbf{SciQA, \glspl{uri}} & 0.073          &  0.075        &  0.195           &  0.135          &  0.018 
+
+	\end{tabular}
+
+	\caption{
+		\glsentrylong{kb} vocabulary size to number of dataset samples.
+	}
+
+	\label{table:comparisonRatios}
+\end{table*}
+

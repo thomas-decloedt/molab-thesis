@@ -1,0 +1,1448 @@
+\chapter{Experiments}
+\label{s:experiments}
+
+This chapter presents the experiments conducted to validate the requirements outlined in \Cref{s:validation}.
+It begins with a detailed explanation of the experimental setup,
+followed by five key experiments and their results.
+The approach is then benchmarked against related work from the literature.
+The chapter concludes with a discussion of the findings and their broader implications.
+
+\section{Experimental Setup}
+
+This section elaborates on the configuration of the \glsentrylong{kg},
+the specific models utilized along with their respective settings,
+and the software and hardware resources employed during the experiments.
+
+\subsection{Knowledge Graph and Benchmark}
+\label{s:knowledge_graph_and_benchmark}
+
+\gls{orkg} was chosen to evaluate the proposed approach,
+it is a scientific knowledge graph consisting of papers and authors.\footnote{ORKG: \url{orkg.org}.}
+As of writing the \gls{kg} consists of \num{904212} unique entities,
+although for this work the choice was made to work with an older version
+--- because the SciQA benchmark, introduced in \Cref{s:gt_retriever_data}, that targets \gls{orkg} is outdated
+--- consisting of \num{180184} and \num{6888} unique entities and relations, respectively.
+
+\subsubsection{Motivation}
+
+The subsequent paragraphs explain why the choice was made to work with this \gls{kg} and its associated benchmark.
+
+\paragraph{Domain}
+
+\gls{orkg} and SciQA are specialized, i.e., tailored to a specific instead of a general domain.
+This is in line with the ontologies that occur in \gls{mbse}.
+A \gls{kg} with no particular focus would be less appropriate.
+
+\paragraph{Semantics}
+
+As discussed in \Cref{s:training_finetuning}, the \gls{squall} expert was fine-tuned using the LC-QuAD 2.0 dataset,
+which is designed for the Wikidata \gls{kg}.  
+Despite substituting all \glspl{uri} with placeholders 
+--- mapping \glspl{gp} to \glspl{pgp}
+--- before training, the semantic information of the original \gls{kg} remains embedded in the queries.
+This persistence occurs because the original queries are inherently structured to align with the \gls{kg};
+otherwise, they would yield no results upon execution.\footnote{
+	\gls{sparql} is a graph query language where queries are represented as \glsentryfullpl{bgp} or \glsentryfullpl{cgp}
+	--- both of which are ultimately graphs (see \Cref{fig:sparqlBGP}).
+	Executing a query involves matching a \gls{gp} against a \gls{kg},
+	a process known as \glsentryfull{gpm} or subgraph matching.
+	Consequently, any dataset of queries designed for a specific \glsentrylong{kg} will include \glspl{gp}
+	with topologies that align with the structure of that graph.
+}
+Overlap between datasets can occur; for instance,
+both DBpedia and Wikidata include the \mintinline{text}{marriage} relation between two \mintinline{text}{human} entities.
+To mitigate such similarities, the approach is evaluated on a specialized domain.
+If evaluation were instead conducted on DBpedia while the \gls{squall} expert was trained on Wikidata,
+the results could appear overly optimistic.
+
+\paragraph{Version}
+\label{s:kg_version}
+
+SciQA is out of date with the current version of \gls{orkg}: only 10 out of \num{2565} queries returned results.
+Hence, the version of February 14, 2023 was used
+--- \gls{rdf} dump made available at \cite{auerSciQABenchmarkDataset2023}
+--- which returns query results in \approx 92\% of cases,
+and contains \num{181147} entities and \num{6888} properties.
+It was made accessible through a local \gls{sparql} endpoint using Apache Jena Fuseki.
+
+\paragraph{Size}
+\label{s:size_kgb}
+
+The survey of ontology engineering projects mentioned in the introduction of \Cref{c:proposedSolution}
+also gives insight into the size of real-world ontologies \cite{simperlAchievingMaturityState2009},
+where ontology size is taken to be the number of unique entities.
+The size of the chosen \gls{kg} is considered to be sufficiently large to be representative,
+see \Cref{fig:ontologySizes}.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{ontology-size-distribution.pdf}
+	 \caption{
+	 	Distribution of ontology sizes (i.e., number of entities)
+		from a survey \cite{simperlAchievingMaturityState2009}.
+	}
+    \label{fig:ontologySizes}
+\end{figure}
+
+\subsubsection{Templates}
+\label{s:templates}
+
+% Data example
+To better understand the structure of queries in the SciQA dataset,
+\Cref{fig:combinedSciQAListings} provides two example \gls{sparql} queries,
+and the equivalent \gls{squall} expressions.
+Note that while the questions and \gls{sparql} queries are from SciQA,
+the \gls{squall} expressions are constructed as part of this work.
+
+\begin{listing}[ht!]
+
+	\mintinline{text}{SPARQL:}
+	\inputminted{sparql}{src/listings/running-example/pgp.sparql}
+	\mintinline{text}{}
+
+	\mintinline{text}{SQUALL:}
+	\inputminted{text}{src/listings/running-example/squall.txt}
+	\mintinline{text}{}
+
+	\mintinline{text}{===}
+	\mintinline{text}{}
+
+	\mintinline{text}{SPARQL:}
+	\inputminted{sparql}{src/listings/sciqa-example-b/pgp.sparql}
+	\mintinline{text}{}
+
+	\mintinline{text}{SQUALL:}
+	\inputminted{text}{src/listings/sciqa-example-b/squall.txt}
+	\mintinline{text}{}
+
+	\caption{Example question-query pairs from SciQA with equivalent \glsentryshort{squall} expression.}
+	\label{fig:combinedSciQAListings}
+\end{listing}
+
+One notable difference between the two examples is the presence of an \mintinline{sparql}{OPTIONAL} clause
+in the bottom one.
+This difference is also reflected in the corresponding \gls{squall} expression,
+where it is represented by \mintinline{text}{if defined}.
+
+Clearly, these two queries have distinct structures.
+However, due to the way the SciQA dataset is created, see \Cref{s:gt_retriever_data},
+there are only a limited quantity of such unique query structures, called templates, present, namely eight.
+Note that this is typically the case for these types of datasets, e.g., LC-QuAD.
+Although queries will vary, for example, in terms of which literals are present, the structure they have will always
+belong to one of eight templates.
+
+These examples highlight the distinct structures of the queries.
+However, the SciQA dataset, as explained in \Cref{s:gt_retriever_data},
+is constructed with a limited number of unique query structures, referred to as templates.
+Specifically, there are eight such templates in total.
+This is a common characteristic of datasets in this domain, such as LC-QuAD.
+While the specifics (e.g., literals) of queries in the dataset may vary,
+their underlying structure always conforms to one of these templates.
+
+The query templates in SciQA are denoted by the set $T = \Set{ 1, \ldots, 8 }$.
+When a specific template $x \in T $ is excluded, this is represented as $ T \setminus \{x\} $.
+
+For an example of each template, the appendix can be consulted, see \Cref{appendix:sciqa_sparqls}.
+
+\subsection{Model Configurations and Settings}
+
+In the paragraphs ahead practical choices related to the implementation and experimentation are summarized.
+
+\paragraph{Retrieval}
+\label{s:settings_retrieval}
+
+Before training the domain expert, the \gls{kg} index ($\mathscr{I}_{\text{\gls{kg}}}$) is first built using
+Sentence-BERT \cite{reimersSentenceBERTSentenceEmbeddings2019} as embedding model ($\lambda$)
+with the dimension set to \num{1024}.
+The similarity function ($\sigma$) used for indexing was the cosine similarity.
+
+\paragraph{Augmentation}
+
+Following \cite{heGRetrieverRetrievalAugmentedGeneration2024}, the specific graph embedder used for embedding the
+subgraphs was the \glsentrylong{gat} \cite{velickovicGraphAttentionNetworks2018},
+with 4 layers, a hidden dimension ($d_g$) of \num{1024}, 4 heads and a dropout of 0.
+The projector is implemented as a \glsentrylong{mlp} with 2 layers, a hidden dimension of \num{2048} and
+the output dimension ($d_t$) is \num{4096}, aligned with the hidden dimension of the \gls{llm} used in the generator.
+Some experimentation was done where the entire \gls{kg} served as graph token,
+which required reducing the dimensions of the graph embedder, though this line of investigation was not further pursued.
+
+\paragraph{Generation}
+
+The \gls{llm} used for the generator component was Llama2-7b \cite{touvronLlama2Open2023}.
+It served as the \gls{squall} expert that was frozen after being fine-tuned in all the experiments.
+More specifically, a LLaMA-Adapter \cite{zhangLLaMAAdapterEfficientFinetuning2023} is fine-tuned.
+The \gls{peft} technique that was used was \gls{qlora} \cite{dettmersQLoRAEfficientFinetuning2023}.
+Parameter settings were informed by standard fine-tuning approaches for LLaMA v2.\footnote{
+	The fine-tuning procedure was guided by the tutorial available at
+	\url{https://www.kdnuggets.com/fine-tuning-llamav2-with-qlora-on-google-colab-for-free}.
+}
+
+\paragraph{Domain Expert}
+
+Observing diminishing returns from initial experiments, patience was set to 3,
+with all other parameters following the settings described by \cite{heGRetrieverRetrievalAugmentedGeneration2024}.
+
+\paragraph{Linking}
+\label{s:settings_linking}
+
+The similarity function ($\sigma$) used during linking was kept from the earlier implementation
+\cite{omarUniversalQuestionAnsweringPlatform2023}, 
+it is based on the \glsentryfull{cf} \cite{castrofernandezSeepingSemanticsLinking2018}.
+Given a placeholder string $s$ and an \mintinline{sparql}{rdfs:label} of a vertex or edge $x$,
+they are represented as sequences of words $t$:
+\[
+	t = (w_i)_{i \in I}. \\
+\]
+The sequences are embedded using an operator $T$, here defined as:
+\[
+	T: t \mapsto \Set{ W_i^{\phi} =
+		\begin{cases}
+			\lambda(w_i) & w_i \in \text{dom}(\lambda) \land \phi = \lambda, \\
+			\delta(w_i)  & w_i \notin \text{dom}(\lambda) \land \phi = \delta,
+		\end{cases} \ | i \in I
+	}.
+\]
+
+%\TODO{Fix citation}
+In practice $\lambda$ and $\delta$ are the fastText \cite{bojanowskiEnrichingWordVectors2017}
+and chars2vec model, respectively.\footnote{
+	Chars2vec available at \url{https://github.com/IntuitionEngineeringTeam/chars2vec}.
+}
+The latter serves as a fallback option if the former fails to recognize the input.
+The similarity is then defined as:
+\[
+	\sigma(s, x) = f_{\glsentryshort{cf}}(T(s), T(x)).
+\]
+Let $ \mathcal{S} = T(s) $ and $ \mathcal{X} = T(x) $,
+then the \gls{cf} between sets of embeddings is defined as follows:
+\[
+	f_{\gls{cf}}(\mathcal{S}, \mathcal{X})
+	= \frac{1}{|\mathcal{S}||\mathcal{X}|}
+	\sum_{\left(S^{\phi_s}, X^{\phi_x}\right) \in \mathcal{S} \times \mathcal{X}}
+	\sigma_{*}\left(S^{\phi_s}, X^{\phi_x}\right),
+\]
+where 
+\[
+	\sigma_{*}\left(S^{\phi_s}, X^{\phi_x}\right)
+	= \mathbb{1} _ { \Set{ \phi_s = \phi_x } }
+	\left(\sigma_{\text{cos}}\left(S^{\phi_s}, X^{\phi_x}\right)\right),
+\]
+using the indicator function to define embeddings originating from different models as perpendicular.
+Linking back to the similarity function used for indexing, they are evidently quite distinct.
+The works that proposed them in their original context either did not explore or
+report any significant performance impact using alternatives.
+As a comprehensive evaluation of different similarity functions was deemed out of scope,
+both functions were retained as originally implemented.
+
+\paragraph{Pre-Trained Large Language Model}
+
+The OpenAI \gls{api} was used to create the synthetic datasets.
+
+\paragraph{Software and Hardware}
+
+The implementation uses a server designed to process incoming questions,
+interact with the \gls{sparql} endpoint of the \gls{kg}, and return results.
+This server is constructed using a lightweight Python Flask
+application and is hosted on Apache with an \gls{aws} environment.
+Both the server and the query endpoint are deployed on the same
+\gls{aws} EC2 instance.
+
+\subsection{PCST Parameter Triple}
+
+The subsequent sections make use of a shorthand notation to indicate the parameters of the
+\glsentryfull{pcst} algorithm.
+The algorithm is used to construct relevant graphs for a given input question,
+and it is implemented as the retrieval and post-retrieval components.
+
+The parameter triple \((k_\text{v}, k_\text{e}, C)\) specifies
+the top-\(k\) retrieved vertices (\(k_\text{v}\)),
+the top-\(k\) retrieved edges (\(k_\text{e}\)),
+and the cost per edge (\(C\)),
+as defined in \Cref{eq:topkVertices}, \Cref{eq:topkEdges}, and \Cref{eq:graphCost}.
+
+In practice, $k_\text{v}$ and $k_\text{e}$ are always equal and are collectively referred to as $k$.
+
+\subsection{Notebook and KGQA Pipeline Connection}
+
+The interaction between the notebook environment and the \gls{kgqa} pipeline is facilitated through a custom Python
+package that introduces a user-friendly magic command for posing questions.
+Developed by François Goybet as part of his bachelor's project in tandem with this master's thesis,
+this package enhances usability by enabling seamless communication with the \gls{kgqa} pipeline hosted on an \gls{aws}
+server.\footnote{
+	Python package available at \url{https://pypi.org/project/molab-ext}.
+}
+
+Once the custom magic is loaded in a notebook cell, users can input a natural language question.
+Upon execution, the question is sent to the pipeline, which automatically handles all intermediate steps
+--- ranging from question parsing to result retrieval.
+This process eliminates the need for stakeholders to interact directly with the underlying pipeline,
+providing an intuitive interface for querying the system.
+
+This extension, tailored to the requirements of this work,
+was independently developed but designed to integrate seamlessly into the research setup.
+The connection allows users to leverage the pipeline without requiring extensive technical knowledge.
+This integration not only simplifies stakeholder interaction with the \gls{kgqa} pipeline
+but also significantly enhances the accessibility and practicality of the system.
+
+%%%%%%%%%%%%%%%
+
+%%%% Experiments
+
+% Hypothesis: what
+% Hypothesis: why
+% Actual results
+% If unexpected: insight why this might be
+
+\section{Retrieval and Post-Retrieval Analysis}
+% Parameter exploration
+
+% Intro
+The first experiment investigates the retrieval and post-retrieval components applied to \gls{orkg},
+introduced in \Cref{s:retrieval} and \Cref{s:postRetrieval}, respectively.
+
+% Recap
+These two components aim to construct a relevant subgraph of the \gls{kg} for a given question 
+that can be used to improve the performance of the domain expert.
+%
+The running example from \Cref{c:methodology} is reintroduced here, see \Cref{fig:runningExamplePostRetrieval}.
+Consider the following question:
+\mintinline[breaklines]{text}{Provide a list of papers that have utilized the Depth DDPPO model and include the links to their code?}
+When inputted to the retriever it will return relevant vertices and edges of the \gls{kg},
+for example, there might be a vertex \mintinline{text}{Model} and an edge \mintinline{text}{HAS_SOURCE_CODE}.
+The post-retrieval component is then responsible for creating a connected graph out of these looses vertices and edges.
+
+% Why
+The primary objective of retrieval is to be as informative as possible.
+However, two inherent limitations of any \gls{rag} paradigm are poor and over-retrieval,
+see \Cref{s:why_placeholders}, both negatively impacting generation.
+%
+This implies that a poor parameter choice likely reduces the performance of the domain expert.
+%
+Ideally, the subgraphs at the end of post-retrieval capture all the necessary vertices and edges needed for the 
+domain expert to correctly generate the expected \gls{squall}, while remaining as compact as possible.
+Hence, it is important to have some notion of how the parameters of the retrieval and post-retrieval components
+influence the constructed subgraphs.
+
+% What
+What is being evaluated is essentially how informative the subgraphs are in function of the
+\gls{pcst} parameters.
+
+\subsection{Hypothesis}
+
+% Hypothesis: what
+Increasing the top-$k$ parameter is expected to result in larger subgraphs with higher recall for both entities and
+relations.
+The cost per edge is anticipated to provide fine control over subgraph size,
+for example, increasing the cost per edge will likely contribute to noise reduction by steering the algorithm
+towards smaller subgraphs.
+
+% Hypothesis: why
+The retriever's parameters are presumed to have a direct impact on the quality of the constructed subgraphs.
+Larger subgraphs are likely to capture more of the relevant vertices and edges.
+However, excessive size may introduce unnecessary noise.
+A higher cost per edge is expected to mitigate noise,
+focusing the subgraphs on the most informative components while maintaining high recall.
+
+\subsection{Setup}
+\label{s:retrievalAnalysis}
+
+% How
+Evaluation is performed by varying the \gls{pcst} parameters and investigating how it impacts the subgraphs,
+outputted by the post-retrieval component,
+using average vertex/edge recall and average number of vertices/edges,
+defined in \Cref{eq:avgVertexRecall} and \Cref{eq:avgEdgeRecall}, respectively.
+
+\subsection{Results}
+\label{s:retriever_parameters_results}
+
+% Actual results
+The results, see \Cref{table:retrieverRecall},
+indicate that both the size of the constructed graphs and the recall increase with top-$k$,
+confirming the straightforward intuition that more lenience in terms of which vertices and edges are considered 
+relevant, results in bigger constructed subgraphs containing at least as many of the expected vertices and edges.
+Evidently, if the entire graph would be returned from the retriever, recall would be equal to 1.
+As for the cost per edge, increasing it reliably results in a reduced subgraph size, all else being equal.
+The parameter seems especially valuable for higher top-$k$ values, since the loss in recall reduces (to zero),
+while resulting in about half the amount of vertices/edges.
+
+\input{src/tables/retriever-recall}
+
+% If unexpected: insight why this might be
+Notably, the execution time of the \gls{pcst} algorithm remains stable even as the top-$k$ vertices and edges increase
+and the cost per edge decreases, with only a slight increase in running time.
+
+\section{Synthetic Dataset Quality}
+
+% Intro
+This experiment gauges the quality of the synthetic dataset generated using the rudimentary strategy,
+as explained in \Cref{s:syn_retriever_data}, and used to train the domain expert, see \Cref{s:trainingDomainExpert}.
+
+% Recap
+A high-quality training dataset containing question-query pairs for a specific domain is often unavailable
+in practice due to data scarcity.
+This work addresses this challenge primarily through \glsentryfull{da} and the use of the \glsentrylong{cnl} \gls{squall}.
+However, synthetic data can also play a vital role in mitigating data scarcity.
+To explore this, the performance of the domain expert is compared when trained on ground truth data versus synthetic data,
+as discussed in \Cref{s:generalizationCapabilities}.
+
+% Why
+A basic synthetic data generation approach was deliberately chosen 
+--- advanced strategies are considered out of scope
+--- nevertheless, evaluating the quality of the generated synthetic data remains essential for subsequent experiments,
+as it provides critical insights when interpreting the results.
+
+% What
+Assessing the quality of generated synthetic data is straightforward when ground truths are available,
+as is the case here, direct evaluation can be performed
+which boils down to evaluating how faithful the generated samples are to their references 
+\cite{longLLMsDrivenSyntheticData2024}, ideally they are identical.
+See \Cref{lst:syntheticDatasetQualityEval} for an example.
+
+\begin{listing}[!ht]
+
+\mintinline{text}{Ground Truth SQUALL:}
+\inputminted{text}{src/listings/running-example/squall.txt}
+\mintinline{text}{---}
+
+\mintinline{text}{High quality synthetic SQUALL:}
+\inputminted{text}{src/listings/running-example/squall-synthetic-high-quality.txt}
+\begin{minted}{text}
+> BLEU score: 90
+> One placeholder not faithful to reference:
+> <has code link> instead of <has source code>. 
+\end{minted}
+\mintinline{text}{---}
+
+\mintinline{text}{Low quality synthetic SQUALL:}
+\inputminted{text}{src/listings/running-example/squall-synthetic-low-quality.txt}
+\begin{minted}{text}
+> BLEU score: 23
+> Wrong demonstration followed from prompt.
+\end{minted}
+
+\caption{
+	Comparison of ground truth and synthetic \glsentryshort{squall} for a question,
+	highlighting high-quality and low-quality examples,
+	along with their \glsentryshort{bleu} scores.
+}
+\label{lst:syntheticDatasetQualityEval}
+\end{listing}
+
+
+\subsection{Hypothesis}
+
+% Hypothesis: what
+The higher the \gls{dpt} and the more templates are included in the prompt likely improves performance up to a certain
+point.
+
+% Hypothesis: why
+Given that only eight templates are present in the SciQA benchmark, it seems improbable that the inclusion of a template
+would confuse the \gls{pllm}.
+Furthermore, increasing the \gls{dpt} gives more examples to the model, which should intuitively increase faithfulness.
+
+\subsection{Setup}
+\label{s:synthetic_dataset}
+
+% How
+Faithfulness between generated and reference \gls{squall} queries is evaluated using the \gls{bleu} score.
+Elementary prompt engineering experiments are conducted to examine how variations in the support set
+($\mathscr{D}_{\text{sup}}$) affect data quality.
+
+Two engineering dimensions are explored:
+
+\begin{itemize}
+
+	\item \textbf{Template Variations}:
+
+		As outlined in \Cref{s:templates}, SciQA queries belong to one of eight templates.
+		This axis examines the effect of excluding certain templates from the support set.
+		Three configurations are tested:
+
+		\begin{itemize}
+			\item All templates included: $T$.
+			\item Excluding template 2: $T \setminus \{2\}$.
+			\item Excluding template 6: $T \setminus \{6\}$.
+		\end{itemize}
+
+		These configurations enable evaluation of the faithfulness of generated samples when a template is absent from the
+		prompt.
+
+		Template 2 was excluded due to its significant dissimilarity to the other query templates,
+		making it a strong candidate for assessing the impact of exclusion on quality.
+		In contrast, templates 4 and 5 were the most similar to each other,
+		it is thus likely that excluding one or the other would result in minimal deterioration of the synthetic data quality.
+		Template 6 was excluded for a similar reason to template 2, as it also exhibited notable dissimilarity.
+
+		The dissimilarity was calculated by grouping the queries from the ground truth dataset by template,
+		extracting all tokens associated with each template, and computing TF-IDF scores.
+		Pairwise cosine similarity was then calculated for all template combinations,
+		with templates ranked from most similar to most dissimilar.
+		Templates 6 and 2 appeared as the least similar templates in the ranking,
+		being the penultimate and last templates, respectively, to form a pair.
+
+		While the ideal scenario would involve testing one setup for each excluded template,
+		practical constraints necessitated focusing on this subset.
+		This selection was deemed most suitable for evaluating generalization to unseen and,
+		likely, significantly (more) dissimilar templates in real-world applications.
+
+	\item \textbf{Number of \glsentryfullpl{dpt}}:
+		The second axis explores the impact of varying the number of \glspl{dpt}.
+		Two setups are considered: 
+
+		\begin{itemize}
+			\item One \gls{dpt}.
+			\item Three \glspl{dpt}.
+		\end{itemize}
+
+\end{itemize}
+
+In total, these variations result in six setups with each a unique configuration of the support set
+($\mathscr{D}_{\text{sup}}$).
+For each configuration, corpus-level \gls{bleu} scores are computed across all samples and on a per-template basis.
+The ground truth dataset ($\mathscr{D}_{\text{gt}}$) serves as the reference for evaluating all generated synthetic
+datasets.
+
+The only factor differentiating the six setups is the composition of $\mathscr{D}_{\text{sup}}$,
+see \Cref{s:syn_retriever_data}.
+
+\subsection{Results}
+\label{s:synthetic_dataset_quality}
+
+% Actual results
+The results of the experiment are given in \Cref{table:synthetic_dataset_bleu}.
+
+\input{src/tables/synthetic-dataset-quality}
+
+What is being evaluated here is in essence the \gls{pllm}'s ability to annotate data \cite{zhuCanChatGPTReproduce2023}.
+As expected, it is unequivocal that increasing the \gls{dpt} from one to three improved the faithfulness of the data,
+although no further conclusion can be made with this limited setup.
+
+Moreover, the removal of a template from the prompt clearly has a substantial impact on the data quality
+for that specific label, but this adverse effect is not equal across all templates,
+e.g., the quality of the generated samples following query template 2 in the $T \setminus \{2\}$ case
+is notably worse than the quality of the generated samples following query template 6 in the $T \setminus \{6\}$ case.
+This could be related to the fact that template 2 is more dissimilar to the remaining demonstrations than template 6 is,
+see \Cref{s:synthetic_dataset}. 
+Finally, the removal of one template from the prompt has no significant impact on the quality of generated samples
+belonging to the remaining templates.
+
+% If unexpected: insight why this might be
+No further conclusions can be made from this limited setup.
+
+\section{Text-to-SQUALL}
+
+% Intro
+This section introduces the first evaluation of the domain expert,
+particularly its ability to adapt to new a domain that differs from the source domain used during fine-tuning of the 
+\gls{squall} expert.
+
+% Recap
+The domain expert, see \Cref{fig:domain_expert}, is the \gls{rag} model that generates \gls{squall} given a question.
+Note that these \gls{squall} expressions do not yet contain any \glspl{uri} of the target \gls{kg}.
+In order to obtain an executable \gls{sparql} query, a \gls{squall} expression must still pass through the remainder
+of the text-to-\gls{sparql} pipeline consisting of translation and linking,
+see \Cref{fig:textToSparql}.
+
+% Why
+The objective of this experiment is to evaluate the performance of the domain expert in isolation,
+separate from the rest of the pipeline.
+This approach minimizes confounding factors, such as inaccuracies introduced by an imperfect linking procedure.
+Additionally, the evaluation focuses solely on the domain expert's capabilities before incorporating synthetic data;
+the model is trained exclusively on the ground truth dataset ($\mathscr{D}_{\text{gt}}$).
+
+% What
+The evaluation assesses the model's ability to generate \gls{squall} queries with placeholders,
+comparing its outputs against ground truths for various \gls{pcst} parameter configurations.
+While the first experiment (see \Cref{s:retrievalAnalysis}) provides preliminary insights into the influence of these
+parameters,
+this experiment extends those findings by directly examining their impact on the quality of the generated queries,
+as discussed in \Cref{s:retriever_init_eval}.
+
+\subsection{Hypothesis}
+
+% Hypothesis: what
+Intuitively, more informative subgraph should enhance performance,
+particularly when the retrieval and post-retrieval components achieve higher average recall
+and maintain smaller graph sizes on average.
+
+% Hypothesis: why
+This assumption is grounded in the expectation that
+increasing relevant information and decreasing distracting noise improve the generation process.
+
+\subsection{Setup}
+
+% How
+Evaluation is done using \gls{bleu} scores, comparing generated to reference \gls{squall}.
+
+\subsubsection{Reducing the Number of PCST Parameter Configurations}
+
+Some parameter configurations were discarded due to practical considerations, such as running time, 
+as informed by the retrieval and post-retrieval analysis experiment (see \Cref{s:retriever_parameters_results})
+and a heuristic assessment.
+
+For each pair of \gls{pcst} parameter triples where \( k \) is identical but the cost-per-edge differs, 
+one configuration was excluded from further investigation. 
+Consider the following pair from \Cref{table:retrieverRecall}: (1000, 1000, 0.1) and (1000, 1000, 0.5). 
+Experimental results indicate that while the former achieves slightly higher vertex and edge recall, 
+it also produces subgraphs that are, on average, more than twice the size in terms of vertices and edges. 
+This is a direct consequence of its lower cost-per-edge parameter, and demonstrates a case of diminishing returns.
+
+% Formally
+The heuristic for deciding which parameter triple from a pair ($p_1, p_2$) to keep, is defined as follows:
+
+\[
+	p^* =
+	\begin{cases}
+		p_1 & \text{if } \wideoverbar{R}_{V, \mathscr{D}_1} \gg \wideoverbar{R}_{V, \mathscr{D}_2}, \\
+		p_2 & \text{if } \wideoverbar{R}_{V, \mathscr{D}_2} \gg \wideoverbar{R}_{V, \mathscr{D}_1}, \\
+		p_1 & \text{if } \wideoverbar{V}_{\mathscr{D}_1}    <   \wideoverbar{V}_{\mathscr{D}_2}, \\
+		p_2 & \text{if } \wideoverbar{V}_{\mathscr{D}_2}    \le \wideoverbar{V}_{\mathscr{D}_2}.
+	\end{cases}
+\]
+
+Here, \( p^* \) denotes the retained parameter tuple. 
+\( \wideoverbar{R}_{V, \mathscr{D}_i} \) and \( \wideoverbar{V}_{\mathscr{D}_i} \) represent
+the average vertex recall, see \Cref{eq:avgVertexRecall}
+and the average number of vertices, see \Cref{eq:avgVertices},
+respectively, 
+for the dataset resulting from retrieval and post-retrieval when the parameters from \( p_i \) were used.
+
+In practical terms, a difference in recall was considered significant if it was at least 10. 
+For the previous example, the difference in recall was only 1.66. 
+As a result, the parameter triple (1000, 1000, 0.5) was selected, as it yields more compact subgraphs.
+
+Finally, parameter triples with \( k = 5 \) were excluded, as they resulted in an average vertex recall of zero.
+Instead, a baseline approach was employed.
+
+\subsubsection{Baseline}
+
+% Why?
+The post-retrieval component outputs a graph,
+that helps the domain expert during generation through the augmentation process,
+see \Cref{fig:domain_expert}.
+To assess the impact of different \gls{pcst} parameters on the generation process, a baseline is established.
+
+% What?
+The baseline was determined based on two key observations. 
+First, the output of the post-retrieval component is a graph. 
+Second, the largest and smallest graphs that the post-retrieval component could theoretically produce are
+the entire \gls{kg} and the zero-order graph \( K_0 \), respectively. 
+Here, \( K_0 \) refers to a graph containing neither vertices nor edges. 
+While both extremes were tested, using the entire \gls{kg} proved unfeasible due to computational constraints.
+
+% How?
+This experiment used the baseline by providing \( K_0 \) as input to the augmentation process of the domain expert
+during inference.
+
+\subsubsection{Internal Evaluation}
+\label{s:internalEvaluation}
+
+It is important to emphasize that the \gls{bleu} scores obtained from evaluating the \gls{squall} expressions generated
+by the domain expert are meaningful only within the scope of this work.
+Typically, in \glsentrylong{sp}, \gls{bleu} scores are calculated between reference and generated \gls{sparql} queries.
+However, the \gls{squall} expressions must still pass through the remainder of the text-to-\gls{sparql} pipeline before
+becoming \gls{sparql} queries, as illustrated in \Cref{fig:textToSparql}.
+
+Nevertheless, \gls{bleu} scores based on \gls{squall} expressions are employed as they enable an effective evaluation
+of the domain expert.
+
+Consequently, evaluations based on \gls{squall} expressions are consistently employed,
+but strictly for internal evaluation purposes.
+
+\subsection{Results}
+\label{s:text_to_prelinked_squall}
+
+% Actual results
+Given that no previous results were found that detail the impact of input graph size or recall on graph prompting
+multiple models were trained with differing \gls{pcst} parameters to test
+their impact on the text-to-\gls{squall} task.
+The results are shown in \Cref{table:text_to_prelinked_squall}.
+
+\input{src/tables/text-to-prelinked-squall}
+
+% If unexpected: insight why this might be
+Performance in the $K_0$ scenario is notably and unexpectedly high.
+The fact that the best performance is achieved for $K_0$ 
+is likely due to the relatively homogeneous nature of the SciQA dataset.
+This homogeneity is characterized by recurring entities and relationships within the \gls{sparql} queries,
+thus somewhat nullifying the potential benefit of retrieval.
+
+To concretize this, SciQA is compared to three other benchmarks in terms of its vocabulary.
+The vocabulary of a \gls{kb}, denoted by $K$,
+includes \glspl{uri} and literals \cite{dialloComprehensiveEvaluationNeural2024}.
+In the context of \gls{rdf} datasets: $ K = I \cup L$, see \Cref{def:rdfDataset}.
+A comparison of the datasets and their vocabularies is given by \Cref{table:comparisonDatasets} and
+\Cref{table:comparisonVocabularies}, respectively.
+
+\input{src/tables/comparison-vocabularies}
+
+Clearly, SciQA is a relatively small dataset with a correspondingly limited vocabulary.
+However, when adjusting for dataset size by examining the ratio of vocabulary to dataset size
+(as shown in \Cref{table:comparisonRatios}), a clearer picture emerges.
+From this perspective, SciQA exhibits a relatively poor vocabulary density:
+only the much larger DBNQA dataset has comparable ratios.
+This characteristic of SciQA likely makes memorization more effective,
+offering a partial explanation for the high performance of the $K_0$ baseline.
+
+Secondly, while SciQA's \gls{oov} ratio is higher than two other datasets,
+suggesting a more challenging test split, this observation requires further context.
+The vocabularies reported in previous tables include both \glspl{uri} and literals.
+In SciQA, however, literals significantly outweigh \glspl{uri} in terms of occurrence,
+thus \Cref{table:comparisonVocabularies} and \Cref{table:comparisonRatios} also give the 
+vocabulary size and its ratio to the number of samples when only \glspl{uri} are considered for SciQA.
+The number of unique \glspl{uri} is therefore included in parentheses for clarity where applicable.
+
+Moreover, literals frequently appear verbatim in the original questions, including those in the test set.
+Specifically, literals occur in approximately 90\% of the samples.
+Recalling the example from \Cref{s:gt_retriever_data}, the literal \mintinline{text}{Depth DDPPO}
+appears exactly in the question, see \Cref{lst:verbatimLiteral}.
+
+\begin{listing}[!ht]
+
+\begin{minted}{text}
+SQUALL:
+Provide a list of papers that have utilized the Depth DDPPO model and include the links to their code?
+
+\end{minted}
+
+\mint{text}{SPARQL:}
+\begin{minted}{sparql}
+SELECT DISTINCT ?code WHERE {
+	?model a orkgc:Model;
+		rdfs:label ?model_lbl .
+	FILTER(STR(?model_lbl) = 'Depth DDPPO')
+	?benchmark orkgp:HAS_DATASET ?dataset .
+	?cont orkgp:HAS_BENCHMARK ?benchmark .
+	?cont orkgp:HAS_MODEL ?model;
+		orkgp:HAS_SOURCE_CODE ?code .
+}
+\end{minted}
+
+\caption{String literal present in both the question and its equivalent query.}
+\label{lst:verbatimLiteral}
+\end{listing}
+
+This heavy reliance on literals further reduces the vocabulary's expressiveness
+and may contribute to the observed performance patterns.
+
+Despite these limitations,
+incorporating more informative subgraphs during graph prompting
+--- particularly those with higher vertex and edge recall
+--- demonstrates a measurable improvement in performance.
+While the (1000, 1000, 0.5) parameter configuration does not surpass the $K_0$ baseline,
+it still outperforms all other tested configurations.
+Consequently, this combination was selected for further evaluation of the model's generalization capabilities.
+
+Finally, it is hypothesized that the proposed \gls{rag} paradigm would show greater benefits and that the baseline
+would not remain the best-performing setup if a dataset with a richer and more diverse vocabulary were used.
+However, the current findings remain inconclusive due to the limitations of the dataset.
+These limitations neither confirm nor entirely refute the hypothesis, underscoring the need for further investigation.
+
+In summary, while these results provide insights,
+additional research with richer datasets and varied experimental setups is essential to validate the hypothesis
+and fully realize the potential of the proposed approach, as outlined in \Cref{s:discussion}.
+
+\section{Generalization Capabilities}
+\label{s:generalizationCapabilities}
+
+% Intro
+The practical applicability of the domain expert is now assessed.
+
+% Recap
+In practice,
+there are typically no ground truth datasets available for systems in \gls{mbse} comparable to the SciQA dataset.
+However, a data generation strategy could be used to create a synthetic dataset instead.
+Furthermore, no matter the dataset used to train the domain expert,
+there will always question-query templates it has not seen during its training.
+For example, a question that needs to be answered by a query with a structure totally different from the seen templates.
+
+% Why
+The aim of this experiment is to understand how well the domain expert generalizes to realistic, data-scarce,
+scenarios.
+Due to the scarcity of data in \gls{mbse}, it is crucial to evaluate whether the proposed domain expert performs effectively
+when trained on synthetic data or when encountering unseen question-query templates.
+
+\subsection{Hypothesis}
+
+% Hypothesis: what
+It was hypothesized that reducing data quality
+--- either through the use of synthetic data or the exclusion of templates during training
+--- would negatively impact performance.
+While a basic synthetic data generation strategy was employed,
+it was not expected to significantly degrade the domain expert.
+In contrast, template exclusion was anticipated to have a pronounced impact,
+as supported by prior work.
+
+% Hypothesis: What
+The hypothesis is that reducing data quality
+--- either through the use of synthetic data or the exclusion of templates during training
+--- would negatively impact performance.
+While a basic synthetic data generation strategy was applied,
+it was not anticipated to significantly degrade the domain expert’s performance.
+In contrast, template exclusion was expected to have a more pronounced impact, as suggested by prior work.
+
+% Hypothesis: why
+These hypotheses rest on two key assumptions.
+
+First, the \gls{squall} expert
+--- used as the generator component of the domain expert, see \Cref{fig:domain_expert}
+--- is presumed to possess sufficient knowledge of \gls{squall}.
+Before training, the domain expert is generally expected to generate syntactically correct \gls{squall} in most cases,
+due to the \gls{squall} expert.
+The domain expert's training is primarily done to align the domain expert with the target domain
+such that it can generate \gls{squall} that is also semantically correct.
+
+Second, \glspl{llm} are known to struggle with generalizing to unseen question-query templates
+\cite{reydAssessingGeneralizationCapabilities2023}.
+Consequently, the proposed approach is not expected to be immune to this limitation.
+
+In essence, training the domain expert means that it learns how to generate particular query structures from questions:
+it learns the semantics of the domain.
+It is unreasonable to think the domain expert would be able to generate a semantically correct query for a 
+question if it has not seen that particular type of question-query structure before.
+
+Given that the synthetic data was found to be of reasonable quality
+--- when examples for all question-query templates were included in the prompt
+--- its impact on performance was not expected to be substantial, see \Cref{table:synthetic_dataset_bleu}.
+
+\subsection{Setup}
+
+% How
+Performance is assessed using \gls{bleu} scores, comparing generated \gls{squall} expressions against their references.
+There are again two evaluation dimensions:
+
+\begin{itemize}
+	\item \textbf{Training Data Type}: Ground truth versus synthetic data.
+	\item \textbf{Template Familiarity}:
+		Performance on all templates when template is seen during training versus left out.
+\end{itemize}
+
+Combining these dimensions results in four distinct evaluation setups.
+
+A note regarding the setup involving synthetic data where queries from template 2 were excluded from the
+training data:
+the prompt used to generate this synthetic data also omitted any examples from template 2.
+If examples from template 2 had been included in the prompt, the \gls{pllm} could have inadvertently generated
+\gls{squall} expressions conforming to the template.
+This would have resulted in samples with template 2 leaking into the training data of the domain expert.
+
+To reduce the number of experiments, the \gls{pcst} parameters for all setups are set to (1000, 1000, 0.5).
+This parameter triple resulted in the best results besides the baseline, see \Cref{s:text_to_prelinked_squall}.
+
+\subsection{Results}
+
+% Actual results
+The experimental results indicate performance degradation when reducing training data quality,
+see \Cref{table:generalization_capabilities_bleu}.
+
+\input{src/tables/generalization-capabilities}
+
+For the ground truth case, when template 2 is unseen during training the domain expert expectedly does a much
+poorer job,
+underscoring the common challenge of generalizing to unseen question-query templates in text-to-query models.
+The limited size of the training dataset may be insufficient for generalizing to new questions targeting
+\gls{orkg} \cite{yinNeuralMachineTranslating2021}.
+Despite extensive fine-tuning of the \gls{squall} expert,
+%which enables adaptation to \gls{orkg} with fewer data samples compared to training from scratch,
+it remains essential that the training dataset for the domain expert is representative of the target domain.
+
+The performance of the domain expert when trained on generated data is evidently affected by the relatively lower
+quality of these synthetic samples.
+
+% If unexpected: insight why this might be
+However, some observations are unexpected:
+
+\begin{itemize}
+
+	\item \textbf{Template 8}:  
+		Only one test sample was available, which limits the ability to draw significant conclusions from its performance.
+
+	\item \textbf{Template 6}:  
+		The poor performance of template 6 can likely be attributed to the limited number of training samples following
+		this template
+		--- 48, which constitutes less than 3\% of the total training data.
+		Given that models tend to favor the most frequent query templates in the training data
+		\cite{dialloComprehensiveEvaluationNeural2024}, it is reasonable to assume that the infrequency of this template
+		may result in its questions being incorrectly categorized as belonging to other, more common templates.
+
+	\item \textbf{Template 4 for Synthetic Target Domain Data}: 
+		The poor performance of template 4 remains unclear.
+		Although the quality of its synthetic data is slightly below average, as shown in
+		\Cref{table:synthetic_dataset_bleu}, and it scores somewhat worse than average for the ground truth case,
+		it seems unlikely that these factors alone would account for such a significant decline in performance.
+		It is possible that the combination of these issues confuses the domain expert in a manner similar to template 6.  
+		To investigate this further, all questions were combined on a per-template basis into a single text,
+		which was then transformed into a vector representation using TF-IDF.
+		Subsequently, the templates were compared pairwise using cosine similarity.
+		Interestingly, the most similar pair of templates was template 4 and template 5.
+		Furthermore, template 5 contains slightly more questions than template 4
+		--- approximately 19\% compared to 14\%.
+		All these factors combined may explain why the model occasionally generates queries that follow template 5 when
+		they should actually follow template 4.
+
+	\item \textbf{Template 2 for Synthetic Target Domain Data on $T:$}
+		The same analysis that was applied to template 4 did not reveal any clear reasons for template 2's poor
+		performance.
+		This suggests that a deeper investigation is required to identify the underlying cause.
+
+\end{itemize}
+
+%An important observation stated by \cite{reydAssessingGeneralizationCapabilities2023} is that it is not clear whether
+%models generate queries based on the semantics of the input question,
+%or merely learn how to map them to particular structures.
+%The difference is profound.
+%Assuming the latter is correct, 
+%this would be the case for both the \gls{pllm} used to generate the synthetic data as well as the domain expert.
+
+\section{Text-to-SPARQL}
+
+% Intro
+The penultimate experiment evaluates the text-to-\gls{sparql} component on the eponymous task.
+
+% Recap
+As illustrated in \Cref{fig:textToSparql}, this component takes text as input and outputs \gls{sparql}.
+It is composed of three subcomponents:
+
+\begin{enumerate}
+	\item The domain expert, which generates an equivalent \gls{squall} expression of a given question.
+	\item The translator, which transforms \gls{squall} to \gls{sparql}.
+	\item The linker, which maps placeholders to \glspl{uri}.
+\end{enumerate}
+
+It is important to reiterate that the translator component produces \gls{sparql} queries that still contain placeholders.
+These outputs previously referred to as \glsentrylongpl{pgp}.
+Only after all placeholders are replaced with \glspl{uri} do these \glspl{pgp} become executable queries,
+referred to as \glsentrylongpl{gp}.
+
+% Why
+Although evaluation based solely on the domain expert's output is sufficient for internal comparisons,
+as discussed in \Cref{s:internalEvaluation}
+--- for instance, it allows for assessing the performance of the domain expert under various parameter configurations,
+such as in the text-to-\gls{squall} experiment detailed in \Cref{s:text_to_prelinked_squall}
+--- translation and linking are vital in order to compare the performance of the proposed approach to that of existing
+methods in the literature.
+
+% What
+The evaluation focuses on the text-to-\gls{sparql} component of the proposed \gls{kgqa} pipeline,
+as illustrated in \Cref{fig:pocImplementation}.
+Two configurations of the domain expert, identified as the best-performing in the text-to-\gls{squall} evaluation,
+are included alongside the baseline (see \Cref{table:text_to_prelinked_squall}):
+$K_0$, (100, 100, 0.5), and (1000, 1000, 0.5).
+All models were trained on ground truth data ($\mathscr{D}_{\text{gt}}$).
+
+\subsection{Hypothesis}
+
+% Hypothesis: what
+No significant differences with the results of the text-to-\gls{squall} experiment were anticipated.
+Likely the same, decreasing, order in terms of performances:
+$K_0$, (1000, 1000, 0.5), and (100, 100, 0.5).
+
+% Hypothesis: why
+The linking strategy was implemented from the literature,
+where it was tested and showed competitive performance \cite{omarUniversalQuestionAnsweringPlatform2023},
+hence, there was no reason to expect major differences.
+
+\subsection{Setup}
+
+% How
+The text-to-\gls{sparql} component is evaluated using the \gls{bleu} score, execution accuracy and $F_1$ score.
+
+\subsubsection{Addressing Discrepancies in BLEU Scoring}
+
+An important consideration is the choice of references for calculating the \gls{bleu} score,
+as illustrated in \Cref{lst:originalVersusFromSquallMappedSparql}.
+
+This example compares the original \glsentryfull{pgp} of a SciQA question to an equivalent \gls{squall} expression.
+When the \gls{squall} expression is translated back into \gls{sparql},
+the resulting \gls{pgp} differs slightly from the original.
+For instance, a \mintinline{sparql}{FILTER} statement may be replaced with an equivalent \mintinline{sparql}{BIND} clause.
+While these differences do not alter the query results, they negatively impact the computed \gls{bleu} score.
+
+In the provided example, the \gls{bleu} score between the original and the translated \gls{pgp} is only 73,
+despite the functional equivalence of the queries.
+
+\begin{listing}[!ht]
+
+	\mint{text}{Original PGP:}
+	\inputminted{sparql}{src/listings/structure-changed-through-mapping/original-pgp.sparql}
+	\mint{text}{===}
+
+	\mint{text}{Equivalent SQUALL:}
+	\inputminted{text}{src/listings/structure-changed-through-mapping/equivalent-squall.txt}
+	\mint{text}{---}
+
+	\mint{text}{Translated PGP:}
+	\inputminted{sparql}{src/listings/structure-changed-through-mapping/translated-pgp.sparql}
+	\mint{text}{===}
+
+	\mint{text}{Generated SQUALL:}
+	\inputminted{text}{src/listings/structure-changed-through-mapping/generated-squall.txt}
+	\mint{text}{---}
+
+	\mint{text}{Generated PGP (i.e., mapped from generated SQUALL):}
+	\inputminted{sparql}{src/listings/structure-changed-through-mapping/generated-pgp.sparql}
+
+	\caption{
+		An example question with its original \glsentrylong{pgp},
+		as well as an equivalent \glsentryshort{squall} expression,
+		and the \glsentrylong{gp} the \glsentryshort{squall} expression has been mapped to by the translator.
+	}
+	\label{lst:originalVersusFromSquallMappedSparql}
+\end{listing}
+
+\subsubsection{Mitigating the Scoring Discrepancy}
+
+Since every output from the text-to-\gls{sparql} component is processed through the translator,
+comparing it to the original \glspl{pgp} would systematically penalize the evaluation.
+This issue is highlighted in \Cref{lst:originalVersusFromSquallMappedSparql},
+which also provides an example of a generated \gls{squall} expression and its translated \gls{pgp}.
+Depending on the reference used, the \gls{bleu} score can vary significantly
+--- 54 when compared to the original \gls{pgp} versus 79 when compared to the translated \gls{pgp}.
+Notably, the only discrepancy in this example is the generated \mintinline{text}{contribution} placeholder.
+
+This issue persists even when \glspl{uri} are used instead of placeholders,
+as linking does not resolve these discrepancies.
+Therefore, to ensure a fair evaluation of the text-to-\gls{sparql} component, this effect must be avoided.
+
+\subsubsection{Creating New References}
+
+To address this issue, new reference queries are created using the following process:
+
+\begin{enumerate}
+	\item Create equivalent \gls{squall} expressions for each \gls{sparql} query.
+	\item Translate the equivalent \gls{squall} expressions back to \gls{sparql} using the translator.
+\end{enumerate}
+
+This approach ensures that the reference queries have also passed through the translator,
+just like the outputs of the text-to-\gls{sparql} component.
+Consequently, the discrepancies described earlier are avoided.
+
+The detailed process for creating these reference queries is discussed in \Cref{s:gt_retriever_data}.
+This method provides a fair and consistent basis for evaluation.
+
+\subsection{Results}
+
+The results of the experiment are presented in \Cref{table:text_to_sparql}.
+These results confirm the hypothesis: the baseline setup remains the best-performing configuration,
+as discussed in \Cref{s:text_to_prelinked_squall},
+followed closely by the setup using parameter triple (1000, 1000, 0.5).
+
+\input{src/tables/text-to-sparql}
+
+Samples for which no \gls{sparql} query was ultimately obtained are excluded from the computation of scores.
+Instead, these cases are represented by their failure percentages.
+Failures arise due to several reasons:  
+
+\begin{itemize}
+	\item General \gls{llm} generation issues, such as repeating tokens excessively or producing incomplete outputs.
+	\item Inability to extract \gls{squall} expressions from the generated output,
+	 e.g., because the \gls{llm} does not follow the expected output format.
+	\item Syntax errors in the extracted \gls{squall}, rendering it unmappable to \gls{sparql}.
+	\item Partial or complete failure in linking placeholders to \glspl{uri},
+	 e.g., not finding a \gls{uri} for the \mintinline{text}{contribution} placeholder.
+	\item Semantic errors in the linked \gls{sparql} query, which can occur due to:
+	\begin{itemize}
+		\item Incorrect linking, i.e., mapping placeholders to erroneous \glspl{uri}.
+		\item Incorrect semantics in the generated \gls{squall}, for example, instead of generating
+
+
+			\mintinline[breaklines]{sparql}{?dataset rdf:type <Dataset>},
+
+
+			the \gls{llm} might produce
+
+
+			\mintinline[breaklines]{sparql}{<Dataset> rdf:type ?dataset}.
+	\end{itemize}
+\end{itemize}
+
+Failures are not included in the computation of scores due to the stringent requirements of the translator,
+which requires inputs to be syntactically correct, otherwise an error is elicited.
+This contrasts with approaches that generate \gls{sparql} queries directly,
+which may contain minor syntax errors,
+but still be readily usable for evaluation.
+Since the text-to-\gls{sparql} component produces no output in these cases,
+alternatives were looked at for evaluation purposes,
+for example, using a generic fallback query.
+Ultimately, this avenue was not pursued further, because it was deemed to make the results less interpretable.
+
+Consider the baseline, the results now indicate that
+for over 90\% of the inputted questions the text-to-\gls{sparql} component can output a syntactically correct query.
+Furthermore, among this successful subset of samples,
+a \gls{bleu} score of 94.34 and an $F_1$ score of 86.52 are achieved.
+
+%Extensive error analysis could provide deeper insights into these results.
+%Such an analysis was considered beyond the scope of this work, as the focus lies on implementing a proof of concept to demonstrate the feasibility of model reporting.
+
+\section{Comparative Analysis}
+
+% Intro
+The results of the proposed approach are compared against a relevant selection from the literature to contextualize its
+performance.
+
+% Recap
+While previous experiments have demonstrated the effectiveness of the proposed approach,
+a comparative evaluation is necessary to assess its relative performance.
+
+% Why
+Such comparisons are critical for validating the architecture's effectiveness under limited data requirements
+and assessing how it performs compared to approaches operating under ideal data availability conditions.
+
+% What
+Two scenarios are considered for this analysis:
+
+\paragraph{Realistic Scenario}
+
+The proposed approach is compared to \gls{kgqan} \cite{omarUniversalQuestionAnsweringPlatform2023},
+a \gls{kgqa} platform designed to operate without domain-specific training data.
+This comparison is particularly relevant,
+as it represents the most challenging version of the text-to-\gls{sparql} task.
+
+\paragraph{Ideal Scenario}
+
+The performance of the proposed approach is also contrasted with a recent benchmark on the SciQA dataset
+\cite{lehmannLargeLanguageModels2024}.
+This benchmark evaluated a range of \gls{llm} setups, including fine-tuning and prompting strategies.
+This scenario reflects the easiest version of the text-to-\gls{sparql} task,
+where models are specifically tailored for the domain using ground truth data.
+
+This dual comparison highlights the strengths and limitations of the proposed approach across diverse conditions.
+By contrasting it with \gls{kgqan} for the most challenging scenario
+and with state-of-the-art \gls{llm} setups for the ideal case, a comprehensive evaluation is achieved.
+
+\subsection{Hypothesis}
+
+% Hypothesis 1: What?
+First, the \gls{kgqan} platform was selected for its alignment with the study's objectives.
+It is hypothesized that \gls{kgqan} would perform competitively on the benchmark,
+providing a robust point of comparison.
+However, \gls{kgqan} is expected to represent a lower bound on performance for this work,
+as it does not utilize any domain-specific data.
+
+% Hypothesis 1: Why?
+This expectation is grounded in \gls{kgqan}'s proven adaptability across a wide range of domains,
+including general-purpose domains and more specialized ones like DBLP \cite{omarUniversalQuestionAnsweringPlatform2023}.
+
+% Hypothesis 2: What?
+Second, the SciQA benchmark results \cite{lehmannLargeLanguageModels2024} provide a complementary perspective.
+The best results were achieved by fine-tuned \glspl{llm},
+which the proposed approach is hypothesized not to surpass.
+These benchmarks are expected to establish an upper bound for performance on SciQA,
+as they only use domain-specific data.
+
+% Hypothesis 2: Why?
+This hypothesis is grounded in the expectation that specialized training confers a significant advantage for the
+text-to-\gls{sparql} task, particularly on a dataset like SciQA,
+which is relatively homogeneous, even across splits (see \Cref{s:text_to_prelinked_squall}).
+Additionally, it is possible that \glspl{llm} do not truly learn sentence semantics
+but instead rely on mapping questions to learned query structures \cite{reydAssessingGeneralizationCapabilities2023}. 
+Building on this premise, training an \gls{llm} on question-query structures it will not encounter during evaluation
+could result in greater confusion and, consequently, degraded performance.
+
+\subsection{Setup}
+
+First the approaches are summarized and compared to this work, afterwards the setups are detailed.
+
+\subsubsection{KGQAn}
+
+% Recap approach
+\gls{kgqan} \cite{omarUniversalQuestionAnsweringPlatform2023} was first introduced in \Cref{s:QASPDA},
+because it seemed an interesting work to compare to
+due to its similar goals as a framework to assist non-technical stakeholders access \gls{kg} information.
+It aims to be universal, and capable of forming queries for any \gls{kg},
+without \gls{kg} specific training data nor prior information.
+
+It attempts to achieve this by splitting up the text-to-\gls{sparql} task in two steps:
+a question understanding step and a linking step.
+%
+The first step is aimed at sentence semantics:
+given an input question a list of semantic triples is generated 
+--- e.g., \mintinline[breaklines]{text}{(model reporting, is, flexible)}
+--- using a trained \gls{llm}.
+The model was previously trained on a \gls{qa} dataset similar SciQA,
+however, one made domain agnostic by replacing \glspl{uri} with placeholders.
+%
+The second step then attempts to construct a query from the generated list using heuristics,
+for example, building an \mintinline{sparql}{ASK} query if the question starts with \mintinline{text}{is}.
+Subsequently, the placeholders are mapped to \glspl{uri} from the target \gls{kg},
+using a dynamic \glsentryfull{jit} linker detailed in the linking section (see \Cref{s:linking}).
+Essentially, it queries the \gls{kg} using string matching based on the placeholders.
+
+% Main Difference
+A key distinction between \gls{kgqan} and the proposed approach lies in the method of query structure generation.
+Unlike this work, which leverages an \gls{llm} to generate query structures
+--- i.e., the domain expert
+--- \gls{kgqan} employs heuristics to construct them from a list of semantic triples.
+So, while both approaches utilize an intermediary representation, they are distinctly different,
+namely \gls{squall} expressions in this work versus semantic triples in \gls{kgqan})
+Furthermore, the assumptions about data availability differ.
+\gls{kgqan} operates under stricter data constraints, as it does not utilize any domain-specific data,
+in contrast to the data-scarce setting assumed for this study.
+
+% Setup
+Still, \gls{kgqan} remains a viable benchmark due to the significant overlap in the intended audience
+and the relatively similar data constraints when compared to other methods in the literature.
+
+The parameters for the linker in both the proposed architecture and \gls{kgqan} were configured as follows:
+
+\begin{itemize}
+	\item The maximum number of vertices and edges returned from a probing query was set to 50 and \num{1000}, respectively.
+	\item After scoring, only the top 10 vertices or edges were retained.
+	\item Only the most likely final answer was selected.
+\end{itemize}
+
+\subsubsection{Benchmarks}
+
+% Recap of Approach
+Recent work \cite{lehmannLargeLanguageModels2024} has established the standard for the text-to-\gls{sparql} task on the
+SciQA dataset using a diverse array of \glspl{llm} (e.g., T5, GPT-3.5-turbo)
+and strategies such as \gls{zsl}, \gls{fsl}, and fine-tuning.
+
+% Key Differences
+The primary aim of \cite{lehmannLargeLanguageModels2024} was to demonstrate how \gls{llm} fine-tuning and
+\gls{fsl} approaches can achieve strong performance on the challenging SciQA benchmark.
+However, this work was not conducted in the context of data scarcity or with a focus on generalizability.
+The methodology employed a straightforward supervised training approach for fine-tuning and relied on prompt
+optimization techniques for \gls{fsl}. 
+
+In contrast, the approach in this study addresses data scarcity through techniques such as incorporating non-parametric
+memory within the domain expert.
+Additionally, generalizability is emphasized by fine-tuning the \gls{squall} expert specifically for the
+text-to-\gls{sparql} task and utilizing it as a generator for the domain expert.
+
+% Experimental Setup
+Various prompt engineering strategies were explored, with the most effective being a similarity-based sampling approach.
+This method involved selecting the seven most semantically similar questions as examples
+and including them in the prompt alongside their corresponding \gls{sparql} queries.
+
+\subsection{Results}
+
+Finally, the results indicate that the proposed approach is competitive especially considering it is built for 
+data-scarce conditions.
+
+\subsubsection{KGQAn}
+\label{s:kgqan}
+
+% Actual results
+
+Contrary to expectations, the platform significantly underperformed.
+The results, presented here for completeness, indicate that 54\% of the test questions failed at generation,
+i.e., \gls{qu} did not produce a valid list of triples.
+For the remaining queries, the \gls{bleu} score was 4.42, with both accuracy and $F_1$ effectively zero.
+
+% If unexpected: insight why this might be
+
+To investigate these unexpected outcomes, the platform's source code and results were examined further.
+When \gls{qu} succeeded in generating queries, the outputs were overly generic.
+While some correct answers were occasionally retrieved during query execution,
+they were vastly outnumbered by incorrect results.
+Two critical features were identified as the root causes, severely limiting the platform's generalizability:
+
+\begin{itemize}
+
+	\item \textbf{\glsentrylong{qu}:}
+
+		Generating triples instead of complete queries using an \gls{llm} does not circumvent the template problem
+		\cite{reydAssessingGeneralizationCapabilities2023}.
+		The challenge of producing the correct structure remains significant:
+		outputting a list of triples rather than a complete query does not fundamentally resolve this issue.
+
+	\item \textbf{Query Building:}
+
+		It became clear that its query building approach based on heuristics does not generalize well to questions
+		expected to be answered through \glspl{cgp} such as those from SciQA,
+		a challenging benchmark \cite{lehmannLargeLanguageModels2024}.
+
+\end{itemize}
+
+\subsubsection{Benchmark}  
+\label{s:benchmark}  
+
+The main results are summarized in \Cref{table:comparativeAnalysis}.  
+For each model, the strategy that yielded the best performance was selected.  
+
+\input{src/tables/comparative-analysis}  
+
+\paragraph{Observations on Model Performance}  
+
+The fine-tuned T5 model and the \gls{fsl} GPT-3.5-turbo configurations,
+in particular, showcase outstanding performance, setting a high standard for comparison.
+However, the approach proposed in this work demonstrates results that are only marginally lower than the benchmarks,
+and are thus considered competitive, see \Cref{table:text_to_sparql}.
+
+\paragraph{Critical Evaluation}  
+
+However, an essential critique arises from \cite{reydAssessingGeneralizationCapabilities2023}:  
+\begin{quote}  
+    The handling of unknown question-query structures is particularly important because it is unclear if models really
+	 generate queries based on sentence semantics, or if they simply map them to known query structures.
+\end{quote}  
+With enough data, it seems plausible that any sufficiently powerful \gls{llm} could generate correct queries for a
+given question, provided it has encountered/encounters the corresponding question-query template during training/in its prompt. 
+
+\paragraph{Additional Insights}  
+
+The analysis in \cite{lehmannLargeLanguageModels2024} provides several key points:  
+\begin{enumerate}  
+    \item \textbf{Entity Hallucination}:  
+		 Entity hallucination, likely influenced by pre-training data,
+		 occurs when models hallucinate entities from external knowledge sources like Wikidata.  
+		 This aligns with earlier identified concerns in this work (see \Cref{s:why_placeholders}).  
+    
+    \item \textbf{Syntactical Errors}:  
+		 The fine-tuned T5 model exhibits a significantly higher rate of syntactical errors (40.0\%) compared to
+		 \gls{fsl} GPT-3.5-turbo (5.2\%), indicating weaker knowledge of \gls{sparql}.  
+		 Likely causes include T5's smaller size and differences in pre-training data and tasks.  
+    
+    \item \textbf{Semantic Errors}:  
+		 Frequent errors include misspelled entities and incorrect predicates.  
+\end{enumerate}  
+
+\paragraph{Mitigation in the Proposed Approach}  
+
+The proposed approach preemptively attempted to address these issues:  
+\begin{enumerate}  
+    \item By using placeholders and subsequently linking.  
+    \item By employing the \gls{squall} expert as the generator for the domain expert,
+		 and freezing it during the latter's training phase.  
+    \item By leveraging \gls{rag}.  
+\end{enumerate}  
+
+\paragraph{Template Generalization and Prompting Strategies}  
+
+Finally, one of the tested prompting strategies involved randomly sampling examples without regard to query templates.  
+This universally resulted in poorer performance,
+highlighting a recurring challenge \cite{dialloComprehensiveEvaluationNeural2024}:  
+generalizing to unseen templates.
+The efficacy of \gls{fsl} heavily depends on well-chosen examples.  
+It appears unlikely that \gls{fsl} approaches would succeed with entirely unseen question-query structures 
+\cite{reydAssessingGeneralizationCapabilities2023}.  
+
+% Note: Final discussion not result discussion.
+\section{Discussion}
+\label{s:discussion}
+
+This section provides a comprehensive analysis of the experimental results,
+offering insights into their broader implications.
+It connects the findings to existing literature, evaluates their alignment with the stated requirements,
+and demonstrates how model reporting is implemented.
+
+Throughout this work, numerous decisions were made to address data scarcity,
+aiming to design an architecture suitable for \gls{mbse}.
+The experiments were structured to explore the potential of the proposed approach in achieving effective model reporting.
+Key design choices included
+restating the text-to-\gls{sparql} task as text-to-\gls{squall} task,
+fine-tuning a robust \gls{llm} to develop a general understanding of \gls{squall},
+integrating this fine-tuned \gls{llm} into a trainable \gls{rag} architecture,
+and investigating the model's adaptability to new domains using corresponding (synthetic) data.
+These choices all had the common goal of realizing robust \glsentrylong{da} from a data rich source domain
+to a specialized (\gls{mbse}) domain.
+
+\subsection{Challenges in Generalization to New Questions}
+
+Previous work \cite{reydAssessingGeneralizationCapabilities2023} shows that
+\gls{nmt} approaches typically struggle with unseen question-query structures.
+During training, \glspl{llm} are often exposed to questions that follow specific structures,
+a pattern evident in the datasets that are widely used, such as LC-QuAD 2.0, and present in SciQA as well.
+Consequently, the corresponding queries adhere to certain templates,
+making it difficult for \glspl{llm} to generate correct queries for questions requiring novel query structures.
+
+While the proposed approach is not without limitations, as discussed in \Cref{s:generalizationCapabilities},
+the experiments suggest significant potential for further development.
+\Cref{lst:domainAdaptation} illustrates the notable differences between queries in the original and target domains.
+Enhancing the diversity of training data during the fine-tuning of the \gls{squall} expert is both feasible
+and primarily a matter of data engineering.
+Such improvements could bolster the domain expert's ability to generalize to question-query structures not encountered
+during the second training phase.
+Additionally, employing more advanced synthetic data generation techniques could further expand the variety and
+representativeness of the training dataset, enhancing the model's robustness and adaptability.
+
+\subsection{Adaptation to New Knowledge Graphs and Domains}
+
+The \gls{squall} expert was fine-tuned on LC-QuAD 2.0,
+then frozen and integrated into a \gls{rag} architecture (see \Cref{s:sysArch}),
+resulting in the domain expert.
+That model was subsequently trained on SciQA, a dataset tailored for \gls{orkg} rather than Wikidata.
+This training strategy (see \Cref{s:training_finetuning}) on two distinct domains provides valuable insight into the
+domain adaptation, or more broadly, generalization capabilities of the proposed implementation.
+As stated above, despite the significant differences between the \gls{sparql} templates used in LC-QuAD 2.0 and SciQA
+the domain expert exhibited the ability to adapt to the new \gls{kg}/domain
+using relatively little synthetic data of a lower than ground truth quality.
+
+These results further corroborate the notion that \gls{squall} can effectively reduce data requirements.
+Catastrophic forgetting the \gls{squall} expert is likely avoided of by keeping it frozen.
+The use of placeholders enables reusing the \gls{squall} expert for a new domain, it makes possible this domain adaptation approach  .
+Although deep error analysis is necessary to get good concrete empirical evidence.
+
+\subsection{Adaptation to New Knowledge Graphs and Domains}
+
+The \gls{squall} expert was fine-tuned on LC-QuAD 2.0, subsequently frozen,
+and integrated into a \gls{rag} architecture (see \Cref{s:sysArch}), resulting in the domain expert.
+This model was then trained on SciQA, a dataset specifically designed for \gls{orkg} rather than Wikidata.
+This dual-domain training strategy (see \Cref{s:training_finetuning})
+offers valuable insights into the domain adaptation and generalization capabilities of the proposed implementation.
+
+Despite the significant differences between the \gls{sparql} templates used in LC-QuAD 2.0 and SciQA,
+the domain expert demonstrated the ability to adapt effectively to the new \gls{kg}/domain using relatively limited
+synthetic data, even when the data was of lower quality than ground truth.
+These results support the potential of \gls{squall} to reduce data requirements effectively.
+
+Freezing the \gls{squall} expert likely mitigates catastrophic forgetting,
+ensuring that the gained \gls{squall} knowledge is retained.
+Moreover, the use of placeholders facilitates the reuse of the \gls{squall} expert across domains,
+enabling the proposed approach to domain adaptation.
+While these findings are promising,
+a detailed error analysis is necessary to provide robust empirical evidence and uncover potential areas for refinement.
+
+\subsection{Ambiguity Related to RAG}
+
+The effectiveness of using \gls{rag} in the proposed framework remains inconclusive.
+While some improvement was observed with higher recall of constructed subgraphs, the baseline approach
+--- where no subgraph is provided during generation
+--- still outperformed the other setups (see \Cref{table:text_to_prelinked_squall}).
+This outcome is likely due to the homogeneous nature of the SciQA dataset (see \Cref{s:text_to_prelinked_squall}),
+which may limit the potential advantages of \gls{rag}.
+In such cases, the baseline approach likely leads to memorization
+--- due to the retrieved data being highly similar across samples,
+--- outperforming actual learning to utilize retrieved data, which the other setups do.
+
+Further investigation is required to confirm or rule out the hypothesized benefits of \gls{rag}.
+Future work could explore its performance across more diverse datasets to provide a definitive assessment of its
+utility within this context.
+
+\subsection{Feasibility of Using Synthetic Data}
+
+It is noteworthy that the majority of SciQA's samples are synthetically generated \cite{auerSciQAScientificQuestion2023}.
+Consequently, the experimental results
+--- including those using ground truth data 
+--- support the idea that data scarcity can be effectively addressed through the use of synthetic data.
+Employing advanced techniques to collect and generate question-query templates tailored to specific domains could
+be critical to model reporting.
+
+\subsection{Potential for Model Reporting and Data Transformation}
+
+SciQA queries are notably complex \cite{lehmannLargeLanguageModels2024},
+often surpassing those in datasets like LC-QuAD in several aspects.
+They frequently involve a high number of triples and true \glspl{cgp},
+which are combinations of \glspl{bgp} extended with relational operations \cite{anglesFoundationsModernQuery2017},
+such as filters and unions.
+While LC-QuAD queries include features like filters, limits, and basic ordering,
+they lack the advanced constructs found in SciQA, such as aggregation, grouping, optionals, and nested queries.
+
+Despite this complexity, the domain expert has demonstrated the ability to effectively handle \glspl{cgp}.
+Current transformations present in the \gls{sparql} queries include solution modifiers and grouping
+(see \Cref{lst:sciqa_4}).
+Importantly, \gls{squall}'s comprehensive coverage of the \gls{sparql} 1.1 standard,
+including graph updates \cite{ferreSQUALLExpressivenessSPARQL2014},
+offers significant potential for extending these capabilities.
+This expansion could support and automate more phases of the model reporting pipeline,
+including advanced transformations.
+
+Achieving this advancement would require high-quality data for fine-tuning,
+along with significantly more diverse (synthetic) training data.
+Such improvements represent a critical step toward enabling more robust transformations within the model reporting
+pipeline.
+An overview of the complex patterns achievable by the current approach is provided in \Cref{appendix:sciqa_sparqls},
+showcasing examples of optional clauses, filters, solution modifiers (e.g., max, limit, order by)
+aggregation, and grouping.
+

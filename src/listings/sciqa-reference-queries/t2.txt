@@ -1,0 +1,1 @@
+What has a rdfs:label and has a <has_contribution> that has a <has_benchmark> that has <has_dataset> a <Dataset> that has a rdfs:label that is 'DDI extraction 2013 corpus'?

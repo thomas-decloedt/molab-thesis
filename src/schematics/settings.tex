@@ -1,0 +1,85 @@
+\usetikzlibrary{
+	angles,
+	arrows,
+	arrows.meta,
+	automata,
+	backgrounds,
+	calc,
+	decorations.pathreplacing,
+	fit,
+	positioning,
+	quotes,
+	shapes,
+	shapes.multipart,
+	matrix,
+	graphs,
+}
+
+\tikzset{
+	arrowtext/.style={
+		font=\scriptsize,
+	},
+	% Vertical and horizontal distance.
+	%node distance = 15pt and 60pt,
+	block/.style={
+		draw,
+		rectangle,
+		minimum width=2.4cm,
+		minimum height=1cm,
+		text width=2.4cm,
+		text centered,
+		fill=white,
+		%font=\scriptsize,
+	},
+	triple_block/.style={
+		draw,
+		rectangle,
+		minimum width=6cm,
+		minimum height=1cm,
+		text width=6cm,
+		text centered,
+		fill=white,
+	},
+	input_output/.style={
+		draw,
+		ellipse,
+		minimum width=1.5cm,
+		minimum height=1cm,
+		text width=1.5cm,
+		text centered,
+		fill=white,
+	},
+	descr/.style={
+		midway,
+		%font=\scriptsize,
+		above,
+	},
+	connector/.style={
+		->,
+		%font=\scriptsize
+	},
+	rectangle connector/.style={
+		connector,
+		to path={(\tikztostart) -- ++(#1,0pt) \tikztonodes |- (\tikztotarget) },
+		pos=0.5
+	},
+	rectangle connector horizontal/.style={
+		connector,
+		to path={(\tikztostart) -- ++(0pt,#1) \tikztonodes -| (\tikztotarget) },
+		pos=0.5
+	},
+	rectangle connector/.default=-2cm,
+	straight connector/.style={
+		connector,
+		to path=--(\tikztotarget) \tikztonodes
+	},
+}
+
+%%% OLD
+\tikzstyle{invisible_block_placeholder} = [rectangle, text width=2cm, minimum height=0.5cm]
+\tikzstyle{basic_block} = [rectangle, draw, text centered, rounded corners, minimum height=0.75cm]
+\tikzstyle{arrow} = [draw, -latex']
+\tikzstyle{circular} = [draw, circle, radius=1.0cm,]
+\tikzstyle{floatingtext} = [rectangle, text width=7em, text centered, rounded corners, minimum height=2em]
+\tikzstyle{line} = [draw]
+

@@ -1,0 +1,99 @@
+\chapter*{Conclusion}
+\chaptermark{Conclusion}
+\addcontentsline{toc}{chapter}{Conclusion}  
+
+\section{Introduction}
+
+% Goal and research problem
+The primary goal of this work was to present and realize a more flexible approach to reporting in \gls{mbse}.
+To this end, a novel model reporting paradigm was conceptualized.
+This approach was realized through the development of a proof-of-concept implementation, Mo-Lab,
+which leverages an innovative architecture and training techniques, addressing the principal challenge,
+namely data scarcity, that hinders the use of neural models for specialized domains such as those found in \gls{mbse}.
+The insights from this work could guide future efforts to integrate contemporary \gls{nlp} techniques into \gls{mbse}
+workflows.
+
+\section{Research Questions and Answers}
+
+The research questions outlined in \Cref{s:introduction} are reiterated and addressed below.
+
+\textbf{RQ1:}
+How does the performance of the proposed domain expert compare to other approaches
+across various data availability scenarios?
+
+In data-rich scenarios, the domain expert, in its baseline setup,
+performs comparably to state-of-the-art models specifically trained on the benchmark,
+with only slight performance differences.
+In data-poor scenarios, the domain expert significantly outperforms \gls{kgqan}, a comparable approach.
+Although direct results for text-to-\gls{sparql} using synthetic data are not available,
+it can be inferred that the performance would surpass \gls{kgqan},
+given the minimal performance degradation observed in the text-to-\gls{squall} task,
+--- when going from ground truth to synthetic data,
+--- and the linking step,
+--- when associating placeholders with \glspl{uri}.
+
+\textbf{RQ2:}
+Does the domain expert effectively utilize the retrieved information with which it is soft-prompted,
+and what factors influence the effectiveness of these prompts?
+
+Due to benchmark limitations, it is inconclusive whether the domain expert fully leverages the soft prompts.
+However, assuming their efficacy,
+more relevant constructed graphs with higher vertex and edge recall are likely to enhance prompt effectiveness,
+and improve generation.
+
+\textbf{RQ3:}
+What is the impact of using synthetic data, as opposed to ground truth data,
+on domain adaptation performance during the second learning phase?
+
+Synthetic data negatively impacts performance due to its lower quality and lack of representativeness.
+For instance, performance is poor on templates not included in the synthetic data.
+This challenge is consistent with similar approaches,
+as performance on unseen templates remains an open problem in the field.
+However, it should be noted that the ground truth data, albeit of a much higher quality than the synthetic data,
+was essentially also generated, indicating the importance of the quality of the generated data used during the second
+learning phase.
+
+\section{Synthesis and Significance}
+
+The central motivation of this research stems from the desire to make reporting in \gls{mbse} more flexible
+than is currently possible due to the challenge of data scarcity,
+which poses a significant barrier to the adoption of contemporary \gls{nlp} techniques in \gls{mbse}.
+Addressing this challenge required overcoming the reliance on extensive,
+high-quality datasets or the presupposition of domain familiarity by \glspl{pllm}.
+This work contributes to the field by:
+
+\begin{enumerate}
+	\item Introducing a novel paradigm for model reporting in \gls{mbse}.
+	\item Developing an implementation that addresses data scarcity through innovative architectural and training
+		solutions.
+	\item Presenting the domain expert, a \gls{rag} model whose architecture and training procedures could inspire future
+		research in applying \gls{nlp} techniques to \gls{mbse}.
+\end{enumerate}
+
+These contributions highlight the potential of \gls{nlp} advancements in empowering practitioners in \gls{mbse},
+demonstrating practical applications of cutting-edge technology.
+
+\section{Limitations}
+
+Despite its contributions, this work evidently has certain limitations:
+
+\begin{itemize}
+	\item The agent is scoped to a \glsentryfull{qa} pipeline, limiting its generality.
+	\item Results are restricted to illustrative post-processing,
+		such as natural language explanations, tabulations, and visualizations via an external engine.
+	\item Poor performance on unseen question-query templates, a challenge shared by similar approaches,
+		limits its practical applicability.
+	\item No conclusive evidence was gathered on the efficacy of the \gls{rag} mechanism.
+\end{itemize}
+
+\Cref{c:futureWork} outlines how these limitations can be addressed in future research,
+offering multiple interesting avenues.
+
+\section{Closing Thoughts}
+
+This work aspires to inspire practitioners in \gls{mbse} by showcasing the potential of recent advancements in the
+\gls{nlp} field.
+It is hoped that the insights, methodologies, and findings presented here will serve as a foundation for further
+exploration, contributing to the evolution of reporting in \gls{mbse} towards more flexibility and interactivity 
+through \gls{ai}.
+

@@ -1,0 +1,496 @@
+\chapter{Proposed Solution}
+\label{c:proposedSolution}
+
+% Section intro
+This chapter presents the proposed paradigm shift along with its proof-of-concept implementation, Mo-Lab.
+The requirements for the implementation are subsequently defined.
+Finally, the chapter demonstrates how the proof-of-concept satisfies these requirements through validation.
+To provide a clearer context, the discussion first begins with a detailed introduction of \gls{mbse}.
+
+\section{Introduction}
+
+% MBSE tools
+As previously stated, \gls{mbse} is a relatively recent development in \gls{se} turning away from the document-centric earlier
+approaches towards a formalized model-centric one where a model serves as single source of truth instead of a variety of
+sources such as text files and schematics.
+Multiple tools exist that cater to this methodology, for example,
+Cameo Systems Modeler, Innoslate and openCAESAR.
+Hereafter, the latter will be used to showcase some general capabilities of an \gls{mbse} framework
+--- given that the proof-of-concept implementation, presented later on, is targeted at the openCAESAR platform
+--- however, the proposed paradigm of model reporting is meant for all of \gls{mbse}.
+
+% openCAESAR as an example tool
+At the heart of the openCAESAR platform is the \gls{oml} language used to author models.
+Model authoring is supported by openCAESAR through several \gls{oml} workbenches,
+with the Rosetta workbench being the most prominent
+\cite{elaasarOpenCAESARBalancingAgility2023}.\footnote{
+	Rosetta is an Eclipse RCP, 
+	making it comparable in use to the \glsentryshortpl{ide} commonly used in software engineering.
+}\footnote{
+	Rosetta is available at \url{https://github.com/opencaesar/oml-rosetta}.
+}
+
+% Representativeness
+A survey of 148 ontology engineering projects from academia and industry provides valuable insights into the preferred
+languages for ontology development.
+Notably, \gls{owl} emerged as the most commonly used language,
+accounting for 30\% of the projects \cite{simperlAchievingMaturityState2009}.
+Given that \gls{oml} is mapped to \gls{owl} (for details, see \Cref{s:particularsProofOfConcept}),
+openCAESAR can be considered representative.
+Consequently, the proof-of-concept is applicable to a significant portion of \gls{mbse},
+further reinforcing its relevance.
+
+\paragraph{Kepler16b Running Example}
+
+The Kepler16b demo project is used as a running example throughout this chapter with examples taken from the \gls{oml}
+tutorials and from the work presenting the openCAESAR platform \cite{elaasarOpenCAESARBalancingAgility2023}
+as well.\footnote{
+	Kepler16b demo project available at \url{https://github.com/opencaesar/kepler16b-example}.
+}\footnote{
+	Kepler16b demo documentation used for \Cref{fig:keplerDoc} 
+	is available at \url{http://www.opencaesar.io/kepler16b-example/doc}.
+}\footnote{
+	\gls{oml} tutorials used for \Cref{lst:kepler16bDescriptionModelRequirement}
+	is available at \url{https://www.opencaesar.io/oml-tutorials}.
+}
+%
+Kepler16b is an exoplanet orbiting the binary star system Kepler16.
+It serves as an illustrative mission and a case study for the openCAESAR platform \cite{elaasarOpenCAESARBalancingAgility2023}.
+The mission comprises two spacecraft: an orbiter and a lander.
+Each spacecraft is tasked with scientific missions,
+such as characterizing the planet's atmosphere, environment, and gravitational field.
+To achieve these objectives, the spacecraft are composed of multiple subsystems,
+including electrical, thermal, telecom, mechanical, and propulsion, along with their respective components.
+This example thus represents a complex system, necessitating the use of \gls{mbse} methodologies and tool support.
+
+Five key aspects of \gls{mbse} are discussed:
+system design, requirements, analysis, verification and validation.\footnote{
+	Key aspects identified by The International Council on Systems Engineering (INCOSE) as reported at
+	\url{https://sdincose.org/wp-content/uploads/2011/12/SEVision2020_20071003_v2_03.pdf}.
+}
+
+% System design
+\paragraph{System Design}
+\label{s:systemDesign}
+
+First, a model representing the system is designed.
+In openCAESAR's case, the platform enables authors to define their system of interest using a language called \gls{oml}
+as the central formalism for representing domain knowledge in models
+\cite{elaasarOpenCAESARBalancingAgility2023}.
+\gls{oml} is elaborated upon in \Cref{s:particularsProofOfConcept}, here an example is more illustrative.
+See \Cref{lst:kepler16bDescriptionModel}, it shows the Lander Mission along with its
+objectives and its components.
+%
+System design is complex, and to aid in the process \gls{mbse} toolchains typically provide ways to visualize the
+models.
+An example of this is given by \Cref{fig:keplerSystemDesignSchematic},
+which shows the objectives pursued by the familiar Lander Mission and a new Orbiter Mission.
+
+\begin{listing}[!ht]
+
+	\inputminted{text}{src/listings/kepler16b-description-model.oml}
+
+	\caption{
+		Kepler16b description model excerpt showcasing the Lander Mission,
+		its objectives and its components \cite{elaasarOpenCAESARBalancingAgility2023}.
+	}
+	\label{lst:kepler16bDescriptionModel}
+\end{listing}
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.95\textwidth]{images/kepler16b-lander-mission-p2-missions-description.png}
+	\caption{Schematic of the objectives pursued by the Lander and Orbiter Mission.}
+	\label{fig:keplerSystemDesignSchematic}
+\end{figure}
+
+% Requirements
+\paragraph{System Requirements}
+
+Defining a system's requirements is essential to \gls{se}.
+%
+For example, the Ground Datasystem component
+--- deployed by the Lander Mission, see \Cref{lst:kepler16bDescriptionModel}
+--- could be required to present a particular interface.
+See \Cref{lst:kepler16bDescriptionModelRequirement} for how it can be specified in \gls{oml}.
+
+\begin{listing}[!ht]
+
+	\inputminted{text}{src/listings/kepler16b-description-model-requirement.oml}
+	\mint{text}{}
+
+	\begin{minted}{text}
+// Inclusion of the requirement in the requirement documentation. 
+> Requirement 'R.04' specifies that component 'Lander Ground Datasystem' shall present interface 'Command Out'.
+	\end{minted}
+
+	\caption{
+		Kepler16b example requirement and documentation.
+	}
+	\label{lst:kepler16bDescriptionModelRequirement}
+\end{listing}
+
+\paragraph{System Analysis}
+
+Broadly, \gls{mbse} tools allow for analysis of the defined system.
+What the analysis entails depends on the domain of the system, the tools used, etc.
+%
+For example, if the defined system is a digital twin, i.e., virtual representation of a physical object
+then an \gls{mbse} tool could be used to run simulations with the intent of analyzing how the system might behave
+under certain conditions.
+%
+Specifically for openCAESAR,
+analyses can be run to check for any logical inconsistencies in the model \cite{wagnerCAESARModelBasedApproach2020}.
+If, for example, missions were defined to pursue objectives,
+an error would be indicated upon specifying that the Lander Mission pursues the Lander Ground Datasystem component,
+given that the latter is not an objective.
+
+% Documentation and report generation
+\paragraph{System Verification and Validation}
+
+System validation by stakeholders can be effectively conducted using documentation and reports.
+%
+Tools can provide automatic documentation of the system as is the case in openCAESAR.
+Furthermore, \gls{mbse} tools often provide graphical wizards that enable users to create reporting templates.
+These templates are then utilized by the tool's report generator to produce up-to-date reports directly from the model.
+Unlike traditional document-based approaches to \gls{se},
+this method ensures that reports remain consistent with the model.
+%
+\Cref{fig:keplerDoc} presents an example of a generated system documentation in openCAESAR,
+while \Cref{fig:keplerReport1}--\Cref{fig:keplerReport3} shows a report.
+%
+Another example is the generation of requirement documents from the model using a requirement document generator.
+For the Lander Mission and its Ground Datasystem component, refer to \Cref{lst:kepler16bDescriptionModelRequirement},
+which illustrates how the requirement is integrated into the requirement documentation.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.75\textwidth]{images/kepler-documentation.png}
+	\caption{Kepler16b documentation excerpt.}
+	\label{fig:keplerDoc}
+\end{figure}
+
+% Highest level of abstraction
+\section{System Description}
+\label{s:systemDescription}
+
+Now that a general impression of \gls{mbse} practices is painted,
+an example follows of a current reporting approach,
+then the model reporting paradigm is introduced,
+followed by the proof-of-concept implementation.
+Attention is paid as to how the implementation practically differs from current \gls{mbse} approaches.
+
+\subsection{The openCAESAR Analysis Pipeline}
+
+The openCAESAR framework supports the creation of viewpoints from \gls{oml} repositories
+\cite{elaasarOpenCAESARBalancingAgility2023}.
+These viewpoints are templates serving as tailored perspectives that consolidate and interpret data from the source models,
+converting raw information into insights.
+
+The openCAESAR analysis pipeline, utilized to produce these reports, consists of three key steps:
+querying, reduction, and rendering.
+This process is exemplified through the Kepler16b running example.
+
+Querying, or executing a query, entails retrieving data from the model in a structured and systematic manner using a
+formal language
+--- specifically, \gls{sparql} in this context.
+\Cref{s:particularsProofOfConcept} provides an in-depth explanation of how an \gls{oml} source model is queried.
+For the purpose of this section, however, \gls{sparql} queries can be viewed as a systematic, programmatic approach to
+answering questions about the system, as opposed to a manual process.
+
+Executing a viewpoint involves three key stages:
+retrieving the most up-to-date information from the source model (querying),
+transforming the retrieved data (reduction),
+and presenting the results as a view or report (rendering).
+
+\subsubsection{Querying}
+
+The starting point of the views and reports are \gls{sparql} queries.
+Essentially, they serve to retrieve information from the \gls{oml} models,
+as elaborated in detail in \Cref{s:particularsProofOfConcept}.
+\Cref{lst:kepler_query} shows a query that aims to retrieve components and their mass,
+its results are shown in \Cref{lst:kepler_results}.
+Notably, the query demonstrates a high level of complexity, incorporating two \mintinline{sparql}{OPTIONAL} clauses.
+These relational operations enable the query to return data from the model where applicable,
+accommodating scenarios where certain information may not always be available.
+
+\begin{listing}[!ht]
+	\inputminted{sparql}{src/listings/components-query.sparql}
+	\caption{Kepler16b components query \cite{elaasarOpenCAESARBalancingAgility2023}.}
+	\label{lst:kepler_query}
+\end{listing}
+
+\begin{listing}[!ht]
+	\inputminted{json}{src/listings/components-results.json}
+	\caption{Kepler16b components query results \cite{elaasarOpenCAESARBalancingAgility2023}.}
+	\label{lst:kepler_results}
+\end{listing}
+
+\subsubsection{Reduction}
+
+Reductions transform the data into a format closer to the view.
+Much can be done through querying using available transformations, for example,
+relational operations such as \mintinline{sparql}{FILTER} 
+or aggregation and solution modifiers such as \mintinline{sparql}{GROUP BY} and \mintinline{sparql}{COUNT}
+\cite{anglesFoundationsModernQuery2017}.
+Still, various reasons make the reduction step important including limitations of the query language,
+and difficulty in expressing the desired manipulations relative to a more high-level programming language.
+
+\subsubsection{Rendering}
+
+Finally, the data can be presented to stakeholders through static documents or interactive viewers,
+often published to a repository for easy access.
+
+For example, \Cref{fig:kepler} illustrates a mass roll-up of the Orbiter Mission,
+detailing the mass of all the spacecraft's components and their subcomponents.
+%
+A more comprehensive demonstration is provided in \Cref{fig:keplerReport1}--\Cref{fig:keplerReport3},
+which showcase a complete report.
+
+\begin{figure}[H]
+	\includegraphics[width=0.95\textwidth]{images/an-interactive-mass-roll-up-visualization-in-an-opencaesar-report.png}
+	\caption{Interactive mass roll-up visualization of the Orbiter Mission \cite{elaasarOpenCAESARBalancingAgility2023}.}
+	\label{fig:kepler}
+\end{figure}
+
+\subsubsection{Gap}
+
+Some key inflexible aspects of the openCAESAR analysis pipeline have now become clear:
+
+\begin{enumerate}
+	\item \textbf{Querying:}
+		Writing non-trivial \gls{sparql} queries requires technical expertise.
+	\item \textbf{Reduction:}
+		To handle the query results, data engineering skills are necessary.
+	\item \textbf{Rendering:}
+		Appropriate visualization is possible through data visualization skills.
+\end{enumerate}
+
+\subsection{Paradigm}
+
+In contrast to current practices,
+model reporting is here envisioned as an \gls{ai}-assisted process centered around a notebook environment.
+This approach empowers stakeholders to create reports through natural language interactions with an intelligent agent.
+The agent acts as a mediator, bridging the gap between the user and the system by handling technical complexities.
+
+This paradigm aims to enhance flexibility in reporting by freeing stakeholders from rigid, pre-defined templates.
+The agent responds to stakeholder queries with a variety of outputs,
+including textual explanations, tables, schematics, figures, and more.
+Users can reorganize and adapt these outputs as needed, leveraging the notebook environment's text-processing features,
+such as markup, to customize and structure their reports.
+
+Rather than requiring stakeholders to construct formal language queries
+or possess specialized knowledge about report generation in conventional tools and platforms,
+this framework shifts the focus to a conversational process.
+Through natural language prompts, the notebook environment facilitates seamless interaction with the \gls{ai}-agent.
+
+The ideal implementation enables the agent to engage in dynamic conversations,
+accommodate specific requirements for outputs, and shield stakeholders from technical intricacies,
+fostering an intuitive and efficient reporting experience.
+
+\subsection{Implementation}
+\label{s:implementation}
+
+This section gives a summary introduction on the implementation further elaborated upon in \Cref{c:methodology}.
+
+\input{src/schematics/paradigm}
+
+Due to the inherent complexity of realizing the proposed paradigm,
+the initial version simplifies the agent's functionality.
+This proof-of-concept implements the agent as a straightforward and representative \gls{kgqa} pipeline,
+as depicted in \Cref{fig:pocImplementation}.
+The process follows these sequential steps:  
+
+\begin{enumerate}
+    \item A stakeholder submits a natural language inquiry.
+	 \item The inquiry is translated into \gls{sparql} and executed against the \gls{kg}.
+    \item Post-processing is applied, limited to one of the following actions:
+    \begin{itemize}
+        \item Execute the \gls{sparql} query and return tabulated results.
+        \item Ask a \gls{pllm}, such as ChatGPT, for an explanation based on the question and query execution results.
+        \item Pass the query to an available visualization engine from the literature
+        	\cite{raissyaVizKGFrameworkVisualizing2021}, which can infer and produce the most suitable type of figure.
+    \end{itemize}
+    \item The final results are returned to the stakeholder's working environment, such as their notebook.
+\end{enumerate}
+
+\Cref{fig:implementationExample} shows an excerpt of a model report with an example of each post-processing option.
+
+\begin{figure}[H]
+
+	\begin{subfigure}[t]{\textwidth}
+		\begin{minted}{text}
+Question:
+What evaluation metrics are commonly used when benchmarking models on the FSNS - Test dataset?
+
+Natural Language Explanation:
+> The evaluation metric commonly used for benchmarking models on the FSNS - Test dataset is sequence error, which measures the fraction of predictions where the entire predicted sequence does not exactly match the ground truth. It focuses on the accuracy of the full output sequence, making it particularly suited for tasks like text recognition, where exact matches are crucial.
+		\end{minted}
+	\end{subfigure}
+
+	\vspace{0.5cm}
+
+	\begin{subfigure}[t]{\textwidth}
+
+		\begin{minted}{text}
+Question:
+Provide a list of research paper titles and IDs that have benchmarked models on the Penn Treebank dataset?
+
+Tabulation:
+		\end{minted}
+
+		\begin{tabular}{p{6cm}|p{8cm}}
+		\textbf{Paper} & \textbf{Paper Label} \\
+		\hline
+		\href{http://orkg.org/orkg/resource/R129331}{http://orkg.org/orkg/resource/R129331} & Generalizing Natural Language Analysis through Span-relation Representations \\
+		\href{http://orkg.org/orkg/resource/R130817}{http://orkg.org/orkg/resource/R130817} & Direct Output Connection for a High-Rank Language Model \\
+		\end{tabular}
+	\end{subfigure}
+
+	\vspace{0.5cm}
+
+	\begin{subfigure}[t]{\textwidth}
+
+		\begin{minted}{text}
+Question:
+Provide a histogram showing the mean installed capacity grouped by energy source, with data aggregated into 5-year intervals?
+
+Visualization:
+		\end{minted}
+		\centering
+		\includegraphics[width=0.7\textwidth]{images/reporting-example-visualization.png}
+	\end{subfigure}
+
+	\caption{An example of a model report including three questions about a scientific domain.}
+	\label{fig:implementationExample}
+\end{figure}
+
+The most significant challenge in the proof-of-concept implementation was the text-to-\gls{sparql} component
+(see \Cref{fig:pocImplementation}).
+As a result, this component serves as the primary focus of this work.
+Secondary considerations include components post-processing the results of executed \gls{sparql} queries,
+for which some initial solutions, such as visualization, are proposed.
+%
+The goal is to assess the feasibility of the proposed paradigm
+and its effectiveness in reducing technical barriers for stakeholders
+(assuming a data-scarce scenario such that the assessment is as representative as possible).
+%
+The following chapter elaborates upon the implementation, going into depth on the notebook environment
+and the \gls{kgqa} pipeline.
+
+% Practically
+\subsubsection{Shift}
+
+The proof-of-concept illustrates an alternative analysis workflow,
+addressing the inflexibility of the openCAESAR pipeline:
+
+\begin{enumerate}
+
+	\item \textbf{Querying:}
+
+		The introduction of a text-to-\gls{sparql} approach eliminates the need for technical expertise.
+		The \gls{ai}-agent processes natural language prompts from users,
+		seamlessly translating them into queries.
+
+	\item \textbf{Reduction:}
+
+		Data manipulation is fully automated, relieving users of the burden of manually processing data.
+
+	\item \textbf{Rendering:}
+
+		Visualization is handled automatically by an external library that intuitively determines the most appropriate format
+		(e.g., pie charts, bar graphs).
+		Users retain control over report formatting,
+		ensuring the presentation aligns with their specific goals.
+
+\end{enumerate}
+
+\section{Requirements}
+\label{s:requirements}
+
+This section discusses the goals that have guided the architectural and developmental choices for the proof-of-concept
+implementation of the proposed paradigm presented previously (\Cref{s:systemDescription}).
+
+\subsection{Minimize Data Requirements}
+
+\gls{mbse} is often concerned with specialized domains and the models in question might be private.
+Thus, as indicated in \Cref{s:limitations}, access to for example question-query pairs is not guaranteed.
+In the absence of domain specific labeled data, many approaches proposed in the literature are not applicable.
+Although a state-of-the-art approach might be performant on the domain it was trained for,
+generalization to other domains is generally weak, as assessed by
+\cite{reydAssessingGeneralizationCapabilities2023},
+because of unseen question-query templates, unseen \glspl{uri}, etc.
+Hence, the system must be designed to work for domains for which there is potentially limited or no data available.
+This scenario is denoted as data scarcity or limited resource conditions.
+
+\subsection{Maintain Simplicity}
+
+As touched upon in the introduction, the target users are non-technical stakeholders with no specifically assumed level
+of technical expertise.
+Hence, the general paradigm should be easily usable
+and the approach should require not require user intervention of a highly technical level,
+e.g., direct editing of \gls{sparql} queries.
+
+\subsection{Facilitate Comprehensive Report Creation}
+
+To support the creation of comprehensive reports, a wide range of downstream processing capabilities should be enabled,
+including the generation of explanations, tables, figures, and more.
+This goal is best achieved through a \gls{qa} system incorporating a \glsentrylong{sp} step,
+where queries are explicitly generated.
+% What?
+Contrast this with a naive \gls{qa} approach where, given a user question,
+\glsentryfull{ir} might be employed to retrieve relevant information,
+which is then appended to a prompt alongside the original question and passed to a \glsentryfull{pllm},
+such as ChatGPT, for an answer.
+This approach raises the critical question of how essential elements of model reporting
+--- such as visualizations, e.g., the mass roll-up of the Orbiter Mission (see \Cref{fig:kepler})
+--- can be achieved.
+Achieving this would necessitate the \gls{pllm} to generate results in a consistent, predictable format to enable
+subsequent reduction and rendering.
+% Why?
+However, the generative nature of \glspl{llm} introduces inherent unpredictability,
+which can pose significant challenges.
+Additionally, the output token limits of \glspl{llm} may act as a restricting factor.
+For example, the components query for the Orbiter Mission (see \Cref{lst:kepler_query}) retrieves fewer than twenty
+components, as reflected in the mass roll-up visualization.
+However, if the mission had significantly more components, relying on a \gls{llm} to generate all the results would be
+inefficient in terms of time, cost, and computational resources
+--- particularly when a straightforward query could achieve the same outcome. 
+%
+In conclusion, while explicit query construction might be unnecessary when a \gls{qa} system is designed to provide
+natural language responses alone, it becomes indispensable for effective model reporting.
+
+\subsection{Enable Human Oversight}
+
+An \gls{ai}-assisted approach is chosen over a fully automated solution for generating reports.
+%
+First, the output of generative models, such as \glspl{lm} used for text-to-\gls{sparql} generation,
+cannot be guaranteed to adhere to certain requirements \cite{wangSlide4NCreatingPresentation2023}.
+%
+Second, full automation often comes at the expense of user control.
+In the context of reporting, this could result in the inability to customize the structure of the generated report.
+For instance, a stakeholder might prefer a strict format in which all tabular results are preceded by a concise natural
+language explanation, as shown in \Cref{fig:implementationExample}.
+When such preferences are not accommodated, the stakeholder must extensively revise the report's structure,
+leading to inefficiencies.
+Fully automated systems typically introduce these types of challenges by prioritizing automation over user control
+\cite{zhengTellingStoriesComputational2022}.
+%
+Given these downsides, a human-in-the-loop approach that balances automation and human intervention is more suited
+\cite{heerAgencyAutomationDesigning2019}.
+
+\section{Validation}
+\label{s:validation}
+
+This chapter concludes by demonstrating how the proof-of-concept implementation satisfies the stated requirements,
+setting the stage for the detailed methodology outlined in the next chapter.
+
+First, the requirement for minimal data needs is addressed through the use of domain adaptation
+and synthetic data generation techniques, ensuring the system operates effectively with limited resources.
+Second, the implementation maintains accessibility by leveraging the familiar Jupyter Notebook environment
+requiring no specialized skills beyond familiarity with its interface.
+Third, the implementation incorporates three key post-processing features:
+natural language explanation, tabulation, and visualization.
+These are facilitated by the pipeline's explicit query construction.
+Finally, stakeholders are empowered to structure and format reports freely using the built-in features of
+Jupyter Notebook, enhancing customization.

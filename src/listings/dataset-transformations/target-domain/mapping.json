@@ -1,0 +1,8 @@
+{
+	"orkgc:Model": "Model",
+	"rdfs:label": "rdfs:label",
+	"orkgp:HAS_DATASET": "has_dataset",
+	"orkgp:HAS_BENCHMARK": "has_benchmark",
+	"orkgp:HAS_MODEL": "has_model",
+	"orkgp:HAS_SOURCE_CODE": "has_source_code"
+}

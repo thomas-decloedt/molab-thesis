@@ -1,0 +1,5 @@
+SELECT DISTINCT ?x1 WHERE {
+	?x1 <has_contribution> ?x2 .
+	?x2 rdfs:label ?x3 .
+	FILTER(STR(?x3) = 'Test')
+}

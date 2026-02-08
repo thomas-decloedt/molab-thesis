@@ -1,0 +1,85 @@
+\lstset{
+  	%frame=single,                      % Frame around the listing
+  	%numbers=left,                      % Line numbers
+  	%numbersep=5pt,                     % Distance between line numbers and code
+  	%numberstyle=\tiny\color{gray},     % Line number style
+  	basicstyle=\ttfamily\scriptsize,     % Font setting
+  	breaklines=true,                    % Line breaking to fit within column
+  	captionpos=b,                       % Caption position
+  	columns=fullflexible,               % Improved spacing
+  	commentstyle=\color{green},         % Comment color
+  	keepspaces=true,                    % Keeps spaces in text
+  	keywordstyle=\bfseries\color{blue}, % Bold and colored keywords
+  	showspaces=false,                   % Show spaces
+  	showstringspaces=false,             % Show spaces in strings
+  	stepnumber=1,                       % Line number step
+  	stringstyle=\color{red},            % String color
+  	tabsize=2,                          % Tab size
+  	upquote=true,                       % Fix quotes.
+	float,                              % Treat listings as floats
+	floatplacement=htbp,                % Placement preference for floats
+}
+
+%%% SPARQL
+\definecolor{darkgreen}{rgb}{0.0, 0.5, 0.0}
+
+\lstdefinestyle{SPARQL_APPENDIX}{
+    basicstyle=\ttfamily\scriptsize,  % Use small text and typewriter font
+    breakindent=7pt,                  % Indentation for wrapped lines
+    breaklines=true,                  % Enable line breaks
+    commentstyle=\color{red},         % Red comments (single-line)
+    keywordstyle=\ttfamily\scriptsize\color{black}, % Keyword style
+    morecomment=[s][\color{darkgreen}]{/*}{*/}, % Green comments (block)
+    morekeywords={},                  % Add specific keywords if needed
+    showstringspaces=false,           % Do not show spaces in strings
+    stringstyle=\ttfamily\scriptsize\color{black}, % String style
+    tabsize=2,                        % Set tab size
+    upquote=true,                     % Fix quotes
+    xleftmargin=10pt,                 % Add margin for readability
+    xrightmargin=10pt,                % Add margin for readability
+}
+
+%%% SQUALL
+\lstdefinestyle{SQUALL}{
+  %backgroundcolor=\color{white},     % Background color
+  basicstyle=\ttfamily\scriptsize,         % Use small text and typewriter font
+  breakindent=0pt,
+  breaklines=true,                    % Enable line breaks
+  commentstyle=\color{green},         % Comment color
+  keywordstyle=\bfseries\color{blue}, % Keyword color
+  showstringspaces=false,             % Do not show spaces in strings
+  stringstyle=\color{red},            % String color
+  tabsize=2,                          % Set tab size
+  xleftmargin=0pt,                    % No left margin
+  xrightmargin=0pt,                   % No right margin
+}
+
+%%% JSON
+\colorlet{punct}{red!60!black}
+\definecolor{background}{HTML}{EEEEEE}
+\definecolor{delim}{RGB}{20,105,176}
+\colorlet{numb}{magenta!60!black}
+\lstdefinelanguage{json}{
+    basicstyle=\ttfamily\scriptsize,
+    numbersep=8pt,
+    showstringspaces=false,
+    breaklines=true,
+    literate=
+     *{0}{{{\color{numb}0}}}{1}
+      {1}{{{\color{numb}1}}}{1}
+      {2}{{{\color{numb}2}}}{1}
+      {3}{{{\color{numb}3}}}{1}
+      {4}{{{\color{numb}4}}}{1}
+      {5}{{{\color{numb}5}}}{1}
+      {6}{{{\color{numb}6}}}{1}
+      {7}{{{\color{numb}7}}}{1}
+      {8}{{{\color{numb}8}}}{1}
+      {9}{{{\color{numb}9}}}{1}
+      {:}{{{\color{punct}{:}}}}{1}
+      {,}{{{\color{punct}{,}}}}{1}
+      {\{}{{{\color{delim}{\{}}}}{1}
+      {\}}{{{\color{delim}{\}}}}}{1}
+      {[}{{{\color{delim}{[}}}}{1}
+      {]}{{{\color{delim}{]}}}}{1},
+}
+

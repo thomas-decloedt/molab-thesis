@@ -1,0 +1,87 @@
+\begin{figure}[ht!]
+	\centering
+	\begin{tikzpicture}[scale=1.0, transform shape]
+		\tikzset{node distance = 30pt and 30pt}
+
+		\node[draw, ellipse, minimum height=30pt, minimum width=90pt] (Q) {Question};
+		\node[right=of Q, minimum height=30pt, minimum width=90pt, label={above:KG}] (KG) {};
+		\node (kg) at (KG.center) {\includesvg[height=30pt]{kg.svg}};
+		\node[draw, below=50pt of KG, minimum height=30pt, minimum width=90pt] (I) {Indexing};
+
+		\node[below=50pt of Q, minimum height=30pt, minimum width=90pt] (n1) {};
+		\node[below=of n1, minimum height=30pt, minimum width=90pt] (n2) {};
+		%\node[below=of I, minimum height=30pt, minimum width=90pt] (n3) {};
+		%\node[draw,fill=white, fit=(n2) (n3), inner sep=0pt] (R) {};
+		%\node[fill=white] (n5) at (R.center) {Retrieval};
+
+		\node[draw, text centered, below=of I, minimum height=30pt, minimum width=90pt, text width=80pt] (R) {Retrieval};
+
+		\node[below=of n2, minimum height=30pt, minimum width=90pt] (n6) {};
+		\node[below=of n6, minimum height=30pt, minimum width=90pt] (n10) {};
+		\node[below=of n10, minimum height=30pt, minimum width=90pt] (n11) {};
+		\node[draw, below=of n11, minimum height=30pt, minimum width=90pt, fill=blue!20] (E) {Text Embedder};
+
+		\node[draw, text centered, below=of R, minimum height=30pt, minimum width=90pt, text width=80pt] (PR) {Post-Retrieval};
+		\node[draw, below=of PR, minimum height=30pt, minimum width=90pt, fill=red!20] (GE) {Graph Embedder};
+		\node[draw, below=of GE, minimum height=30pt, minimum width=90pt, fill=red!20] (P) {Projector};
+
+		\node[below=of E, minimum height=30pt, minimum width=90pt] (n7) {};
+		\node[below=of P, minimum height=30pt, minimum width=90pt] (n8) {};
+		\node[draw, below=of n8, minimum height=30pt, minimum width=90pt] (n12) {};
+		\node[draw, fit=(n7) (n12), inner sep=0pt, fill=blue!20] (SAL) {};
+		\node (sal) at (SAL.center) {Self-Attention Layers};
+
+		\node[draw, ellipse, below=50pt of SAL, minimum height=30pt, minimum width=90pt] (O) {\glsentryshort{squall}};
+
+		\draw[->] (Q) -- (E) {};
+		\draw[->] (Q) |- (R) node[midway, fill=white] {1};
+		%\draw[->] (n2) -- (E) node[midway, fill=white] {1};
+		\draw[->] (E) -- (n7) node[midway, fill=white] {2};
+		\draw[->] (KG) -- (I) {};
+		\draw[->] (I) -- (R) node[midway, fill=white] {3};
+		\draw[->] (R) -- (PR) node[midway, fill=white] {4};
+		\draw[->] (PR) -- (GE) node[midway, fill=white] {5};
+		\draw[->] (GE) -- (P) node[midway, fill=white] {6};
+		\draw[->] (P) -- (n12) node[midway, fill=white] {7};
+		\draw[->] (SAL) -- (O) {};
+
+		\node[draw, fit=(E) (SAL), densely dotted, very thin, inner sep=5pt,
+		label={[xshift=20pt, yshift=0pt]below left:\scriptsize \glsentryshort{squall} Expert (Generator)}] (SE) {};
+
+		\node[draw, fit=(GE) (P), densely dotted, very thin, inner sep=5pt,
+		label={[xshift=45pt, yshift=0pt]above left:\scriptsize Augmentation}] (AP) {};
+
+		\begin{scope}[on background layer]
+			\node[draw, fit=(I) (R) (PR) (AP), dash dot dot, very thin, inner sep=5pt,
+			label={[yshift=-120pt, rotate=90]above left:\scriptsize Learned Soft Graph Prompt}] (LSGP) {};
+		\end{scope}
+
+		\node[draw, fit=(LSGP) (R) (SE), dashed, very thin, inner sep=15pt,
+		label={[xshift=-100pt, yshift=0pt]above:\footnotesize Domain Expert}] (DE) {};
+
+		% Legend using a matrix
+		\matrix [fill=white, matrix of nodes, nodes={anchor=west}, column sep=0.5cm, row sep=0.2cm, right=of DE, font=\small] {
+			1 & Question \\
+			2 & Text tokens \\
+			3 & Vertex and edge embeddings \\
+			4 & Top-$k$ vertices and edges \\
+			5 & Minimum connected subgraph \\
+			6 & Graph embedding \\
+			7 & Aligned graph token \\
+			\node[align=left, circle, minimum height=5pt, minimum width=5pt, fill=blue!20] (First) {};
+				& \node[align=left, text width=145pt] {First phase of sequential training:\\
+					{\footnotesize The \glsentryshort{squall} expert is independently fine-tuned on the source domain.}
+				}; \\
+			\node[align=left, circle, minimum height=5pt, minimum width=5pt, fill=red!20] (Second) {};
+				& \node[align=left, text width=145pt] {Second phase of sequential training:\\
+					{\footnotesize The domain expert is trained on the target domain, only the augmentation process is tuned,
+					the \glsentryshort{squall} expert remains frozen, and other components are static.}
+				}; \\
+		};
+
+
+	\end{tikzpicture}
+	\caption{Domain Expert.}
+	\label{fig:domain_expert}
+\end{figure}
+

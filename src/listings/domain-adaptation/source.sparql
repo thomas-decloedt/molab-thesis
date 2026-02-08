@@ -1,0 +1,4 @@
+SELECT DISTINCT ?obj WHERE {
+	<Delta_Air_Lines> <mouthpiece> ?obj .
+	?obj <instance_of> <periodical_literature> .
+}

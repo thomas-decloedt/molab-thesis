@@ -1,0 +1,10 @@
+ci_lander : mission:Mission [
+	 base:hasIdentifier "M.02"
+	 base:hasCanonicalName "Lander Mission"
+	 mission:pursues_objectives :characterizeatmosphere
+	 mission:pursues_objectives :characterizeenvironment
+	 mission:deploys_components :lander-launch-system
+	 mission:deploys_components :lander-spacecraft
+	 mission:deploys_components :lander-ground-datasystem
+	 mission:deploys_components :mission-operationssystem
+]

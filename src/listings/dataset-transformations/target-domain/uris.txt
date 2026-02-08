@@ -1,0 +1,2 @@
+URIs:
+["orkgc:Model", "rdfs:label", "orkgp:HAS_DATASET", "orkgp:HAS_BENCHMARK", "orkgp:HAS_MODEL", "orkgp:HAS_SOURCE_CODE"]

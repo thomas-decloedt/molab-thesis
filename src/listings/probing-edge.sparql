@@ -1,0 +1,11 @@
+SELECT DISTINCT ?predicate ?label
+WHERE {
+	?subject ?predicate ?object .
+	?predicate rdfs:label ?label .
+	FILTER(
+		REGEX(?label, 'w_1', 'i')
+		|| REGEX(?label, 'w_2', 'i')
+		|| ...
+	)
+}
+LIMIT n_max_edges

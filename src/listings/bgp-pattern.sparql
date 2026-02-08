@@ -1,0 +1,5 @@
+{
+  ?x <likes> ?y1 .
+  ?x <likes> ?y2 .
+  ?x <follows> ?y3 .
+}

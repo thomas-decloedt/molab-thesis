@@ -1,0 +1,223 @@
+\chapter{Introduction}
+\label{s:introduction}
+
+%% Story, i.e., motivation
+
+% Why is this interesting?
+%\TODO{Downsides and dangers of not properly documenting these complex systems similar to ML models?}
+The need to clearly document complex systems is evident across domains,
+one example hereof is the relatively recent innovation of model cards for \gls{ml} models
+\cite{mitchellModelCardsModel2019}.
+The idea behind them is to document various aspects of the \gls{ml} model, 
+e.g., how it works or for what it is intended,
+such that the various stakeholders can easily access relevant information.
+They are meant to be complementary to datasheets for datasets \cite{gebruDatasheetsDatasets2021}
+which address the concerns of two stakeholder groups:
+dataset creators and consumers.
+For the latter, these datasheets provide the essential information needed to make informed decisions about how to use the data effectively.
+This need for information communication is not limited to the \gls{ai} community.
+
+% Context
+\gls{se} is one such domain that deals with complex systems
+and could reap the benefits of improved information communication.
+The aerospace sector is a pertinent example where \gls{se} is crucial,
+but to deal with the increasing complexity of systems,
+a particular type of \gls{se} is gaining traction: \gls{mbse}.
+It deviates from the document-centric approach of traditional \gls{se},
+opting instead for domain models that serve as single source of truth.
+
+% What is reporting & why do we do it?
+In \gls{mbse}, a system can be documented and presented in a way that is targeted to specific stakeholder groups,
+--- also called reporting
+--- adapting to their expertise and interests \cite{elaasarOpenCAESARBalancingAgility2023}.
+Reports are a type of document-based presentation of the system providing specific information.
+One example are information reports \cite{wagnerCAESARModelBasedApproach2020},
+which are quite similar to the previously mentioned model cards and datasheets,
+from an information communication point of view.
+They give insight, provides analyses, and assist in decision-making throughout a system's life cycle.
+
+% Current approach
+The current approach to the reporting of models in \gls{mbse} is based around pre-defined templates called viewpoints.
+It involves generating a document-based view, or representation, of the model from the perspective of a certain viewpoint.
+These views have been recognized for their contribution in enhancing 
+stakeholder engagement \cite{hendersonValueBenefitsModelbased2021}.
+This general approach is adapted in various formal languages or tools, such as
+the \gls{sysml} and the Cameo Systems Modeler tool,
+the Arcadia Language and the Capella tool
+or the \gls{oml} and the openCAESAR platform.
+To help with report creation, tools can have report generators and include pre-defined viewpoints
+which can be quite numerous in quantity \cite{wagnerCAESARModelBasedApproach2020}.
+% View & viewpoint
+% Viewpoint: https://docs.nomagic.com/display/SYSMLP190/Viewpoint
+% View: https://docs.nomagic.com/display/SYSMLP190/View
+% In other words, a view is a representation of the system from the perspective of a certain viewpoint.
+
+% Gap in current approach
+Although the current industry-standard approach is quite agile
+--- reports can be tailored to specific stakeholder groups
+--- it is not flexible.
+Creating a new type of report or updating an existing viewpoint to address a stakeholder's interest in a previously
+unaddressed aspect of the model requires a significant investment of both time and resources.
+The reason for this is two-fold; in order to create or update a viewpoint both knowledge of the domain
+and of the specific technology used for engineering the viewpoints is needed.
+For example, the technologies used might include a formal query language such as \gls{sparql}
+\cite{hofgenEnhancingModelBasedSystem2024, elaasarOpenCAESARBalancingAgility2023, wagnerCAESARModelBasedApproach2020}
+and a templating language such as \gls{vtl}
+\cite{lutfiIntegrationSysMLVirtual2023, hofgenEnhancingModelBasedSystem2024, traseModeldrivenVisualizationTool2014}.
+Any change thus requires two highly specialized profiles: a domain expert and a technologist,
+the former having the necessary knowledge of the domain in question
+--- while typically not having a formal education in software engineering \cite{bialySoftwareEngineeringModelBased2017}
+--- and the latter having the appropriate skills to define the queries, templates, etc.
+
+% Our paradigm: model reporting
+To address this flexibility gap, model reporting is proposed:
+a no-code interactive reporting paradigm for \gls{mbse}.
+It is a type of information reporting restricted to and aimed at documenting the model of the system under consideration.
+Essential information about the system is conveyed to stakeholders through text, diagrams, tables, etc.
+Different from the current approach to reporting, a technologist is not required.
+Instead, its role is to be supplanted by an envisioned agent who takes care of the technicalities,
+performing the tasks given to it by a user through interaction.
+
+% Proof-of-concept
+A proof-of-concept is put forward based around the notebook environment
+from within which a user can interact with an agent
+--- through natural language interaction 
+--- who answers question about the model with explanations, tabular results and visualizations.
+Reports can be created in this environment in an easy and quick way without help from a technologist.
+For example, the need to know a formal query language is obviated and instead delegated to an agent.
+
+% Approach
+This agent takes the role of the technologist
+and is responsible for generating appropriate responses to user inquiries.
+In the current approach the technologist usually writes the appropriate formal language queries, for example, in \gls{sparql}.
+The well-established domain of \gls{qa} might be used to replace the technologist,
+since it traditionally focuses on generating answers to questions, both in natural language.
+However, model reporting extends beyond text-based answers:
+visualizations and access to tabular data are essential components too.
+Therefore, the agent must not only generate natural language responses
+but also explicitly produce queries that facilitate these additional tasks.
+To achieve this, the agent leverages advancements in \gls{nlp},
+particularly by harnessing the capabilities of state-of-the-art \glspl{llm},
+which are increasingly being used to address complex, multi-faceted challenges in data-driven tasks.
+
+% Problem
+The key problem with explicit query construction for model reporting is the lack of data.
+The domains of \gls{mbse} are often private and highly specialized.
+Lack of data is of course an extremely common issue, but the above two realities make it especially troublesome.
+No high-quality, sizeable and domain relevant labeled datasets can be assumed to exist.
+This challenge is referred to as the ``data scarcity scenario'' throughout this work.
+The primary focus of the remainder of this study is to address and overcome this issue of data scarcity,
+in order to realize model reporting.
+
+% Illustrative example
+To illustrate the issue, consider the following example involving a domain called \gls{orkg},
+which includes papers, their contributors, topics, and more.
+Suppose a non-technical person would like a question answered which has not yet been addressed in any of the previous 
+viewpoints.
+Given the time-sensitivity of their inquiry, they give it a shot by directly querying the model.
+They have no extensive knowledge of the query language, and thus give ChatGPT a try,
+for instance, they might ask:
+\mintinline[breaklines]{text}{Provide a list of papers that have utilized the Depth DDPPO model and include the links to their code?}
+\cite{auerSciQAScientificQuestion2023}.
+Despite providing ChatGPT with the relevant information necessary to answer the question
+--- for example, \gls{rdf} triples
+--- they would likely find that ChatGPT is unable to generate a sensible query.
+This issue arises even though ChatGPT is knowledgeable about \gls{sparql} and has access to domain-specific information.
+The challenge lies in the relative obscurity of \gls{orkg} compared to more widely-known domains
+and the high complexity of the query itself.
+See \Cref{listing:keyProblemExamples} for the expected answer and an example of a generated query.
+Evidently, this is a rather naive approach and much more intricate solutions can be built using \glspl{pllm}.
+Nevertheless, it does get to the heart of the problem:
+for certain domains, generating complex queries is not trivial.
+%\TODO{I forget why a paper \cite{dialloComprehensiveEvaluationNeural2024} was relevant here.}
+A recent experimental study \cite{lehmannLargeLanguageModels2024} supports these intuitions by analyzing the performance
+of \glspl{llm} in generating challenging queries for a specialized domain.
+The findings clearly demonstrate that \gls{zsl} (i.e., prompts without examples) is entirely impractical for complex
+queries.
+While some generated queries may resemble the expected results,
+they are never fully correct, with no exact matches observed \cite{lehmannLanguageModelsControlled2023}.
+Comparable results to fine-tuning can be achieved by selecting an appropriate model and employing extensive prompt
+engineering, which involves incorporating relevant examples into the prompt.
+
+\begin{listing}[!ht]
+	\inputminted{sparql}{src/listings/key-problem-example-ground-truth.sparql}
+	\caption{
+		Ground truth SciQA (above) and ChatGTP-generated (below) query for the same question about \glsentryshort{orkg}
+		\cite{auerSciQAScientificQuestion2023}.
+	}
+	\label{listing:keyProblemExamples}
+\end{listing}
+
+% How is the problem addressed
+Data scarcity is addressed through a three-pronged approach.
+First, the generation target language is shifted from a formal query language (i.e., \gls{sparql}) to
+a \gls{cnl} (i.e., \gls{squall} \cite{ferreSQUALLExpressivenessSPARQL2014}),
+see \Cref{lst:squall_example} for an example.
+Using \glspl{cnl} has been shown to reduce data requirements for \glspl{llm} because they are closer to natural language
+\cite{lehmannLanguageModelsControlled2023}.
+Second, transfer learning is leveraged through a \gls{rag} paradigm, involving:
+\begin{itemize}
+
+	\item \textbf{Initial Fine-Tuning:}
+		Fine-tuning of an \gls{llm} in a data-rich environment, followed by freezing it,
+		as the first phase of a sequential training strategy.
+
+	\item \textbf{Integration in \gls{rag} Model:}
+		Using the fine-tuned \gls{llm} as a generator within a \gls{rag} framework.
+
+	\item \textbf{Retrieval and Augmentation:}
+		Using a static retriever and post-retrieval processing for non-parametric information, and integrating it through
+		a trainable augmentation method incorporated in the intermediate layers of the frozen \gls{llm} (soft prompting).
+	
+	\item \textbf{Domain Adaptation:}
+		Conduct a second phase of training on the target domain, leveraging the frozen \gls{llm} for its retained
+		capabilities while adapting through augmentation.
+
+\end{itemize}
+The resulting model is dubbed the ``domain expert''.
+Finally, to simulate a realistic scenario with some available data,
+synthetic data is generated from the limited dataset to test the effectiveness of the proposed approach.
+In conclusion, data scarcity is addressed through a combination of strategies,
+including \glsentryfull{da},
+the use of a \glsentryfull{cnl},
+the application of the \gls{rag} paradigm,
+and the generation of synthetic data.
+
+\begin{listing}[!ht]
+
+	\mint{text}{SQUALL:}
+	\mint{text}{What is the name of the author-s of PaperX?}
+	\mint{text}{}
+
+	\mint{text}{SPARQL:}
+	\inputminted{sparql}{src/listings/author-of-paper.sparql}
+
+	\caption{\glsentrylong{s2s} example.}
+	\label{lst:squall_example}
+\end{listing}
+
+% Research questions
+From the core problem, the following research questions are formulated:
+\textbf{RQ1:}
+How does the performance of the proposed domain expert compare to other approaches
+across various data availability scenarios?
+\textbf{RQ2:}
+Does the domain expert effectively utilize the retrieved information with which it is soft-prompted,
+and what factors influence the effectiveness of these prompts?
+\textbf{RQ3:}
+What is the impact of using synthetic data, as opposed to ground truth data,
+on domain adaptation performance during the second learning phase?
+
+The contributions of this thesis include the introduction of
+a novel interactive model reporting paradigm for the \gls{mbse} community
+with an accompanying proof-of-concept implementation, Mo-Lab,
+that allows a previously unattainable level of flexibility.
+Furthermore, an approach to the text-to-\gls{sparql} task is presented that is specifically designed for realistic data
+scarce scenarios using a pipeline that incorporates the proposed domain expert.
+Finally, an evaluation and comparison of the presented approach with similar methods on a representative domain 
+is included.
+
+% Recap
+This work advances the state of the art in reporting for \gls{mbse} by its proposed paradigm shift,
+enabled through an approach that overcomes data scarcity through domain adaptation.
+

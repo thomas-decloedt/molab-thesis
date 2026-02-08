@@ -1,0 +1,18 @@
+\input{src/schematics/tikzstyles}
+
+\begin{tikzpicture}[auto, scale=1.0]
+
+\node (nlq) {\small Question};
+
+\node[block, below=0.5cm of nlq] (squall) {\small Text-to-prelinked-SQUALL};
+\node[block, below=0.5cm of squall] (sparql) {\small SQUALL-to-SPARQL};
+\node[block, below=0.5cm of sparql] (link) {\small Linking};
+
+\node[below=0.5cm of link] (link_out) {\small SPARQL};
+
+\path[arrow] (nlq.south) -- (squall.north);
+\path[arrow] (squall.south) -- node[midway, right] {\small 1} (sparql.north);
+\path[arrow] (sparql.south) -- node[midway, right] {\small 2} (link.north);
+\path[arrow] (link.south) -- node[midway, right] {\small 3} (link_out.north);
+
+\end{tikzpicture}

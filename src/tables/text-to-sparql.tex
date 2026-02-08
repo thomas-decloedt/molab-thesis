@@ -1,0 +1,19 @@
+\begin{table}[t]
+	\centering
+	\begin{tabular}{l|SSSS}
+		\textbf{Approach} & \textbf{BLEU} & \textbf{Accuracy} & \textbf{F1} & \textbf{Failure} \\
+
+		\hline
+
+		Baseline ($K_0$)  & 94.34         & 86.52             & 86.52       &  6.83\% \\
+		(100,  100, 0.5)  & 92.76         & 83.57             & 83.72       & 21.81\% \\
+		(1000, 1000, 0.5) & 93.95         & 85.77             & 85.78       & 14.98\% \\
+
+	\end{tabular}
+	\caption{
+		\glsentryshort{bleu}, execution accuracy and $F_1$ scores of different setups on the text-to-\glsentryshort{sparql} task.
+		All domains experts were trained using the ground truth domain dataset.
+	}
+	\label{table:text_to_sparql}
+\end{table}
+

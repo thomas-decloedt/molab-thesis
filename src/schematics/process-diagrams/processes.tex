@@ -1,0 +1,429 @@
+\documentclass{article}
+\usepackage{tikz}
+\usepackage{standalone}
+\usepackage{float} % For the H placement specifier (optional)
+\usepackage{caption} % For customizing captions
+\usepackage{listings}
+\usepackage{cleveref}
+
+\usetikzlibrary{shapes.geometric, arrows}
+
+% Define a new counter for steps
+\newcounter{stepnum}
+\setcounter{stepnum}{0}
+
+% Redefine figure name
+\renewcommand{\figurename}{Process Diagram}
+
+% Define caption format to left-align text
+\captionsetup{format=plain, justification=raggedright, singlelinecheck=false}
+
+% Define a new TikZ command with automatic step numbering
+\newcommand{\processDiagram}[4]{
+	\stepcounter{stepnum}
+	\begin{figure}[H]
+		\caption{#2}
+		\begin{tikzpicture}[node distance=2cm, thick, every node/.style={font=\tiny}]
+
+			% Node styles
+			\tikzstyle{process} = [rectangle, rounded corners, minimum width=2cm, minimum height=0.6cm, text centered, draw=black, fill=blue!20]
+			\tikzstyle{arrow} = [thick,->,>=stealth]
+
+			% Nodes
+			\node (input) [text centered] {#1};
+			\node (process) [process, right of=input, xshift=2cm] {#2};
+			\node (output) [text centered, right of=process, xshift=2cm] {#3};
+
+			% Arrows
+			\draw [arrow] (input) -- (process);
+			\draw [arrow] (process) -- (output);
+
+
+		\end{tikzpicture}
+
+		\raggedright
+		\vspace{0.5cm}
+		% Description
+		\textbf{Process Description:} \\
+		#4
+
+	\end{figure}
+	\vspace{0.5cm}
+}
+
+\newcommand{\processExample}[2]{
+	\raggedright
+	\noindent
+
+	\textbf{Example}:
+	\vspace{0.5cm}
+	\raggedright
+	\noindent
+
+	\textit{Input:} \\
+	\texttt{#1}
+	\vspace{0.5cm}
+	\raggedright
+	\noindent
+
+	\textit{Output:} \\
+	\texttt{#2}
+	\vspace{1cm}
+}
+
+\begin{document}
+
+\newpage
+\section{Base Model}
+
+Starting point is the LC-QuAD 2.0 dataset, whose creation is explained in \Cref{s:lc_quad}.
+
+\processDiagram
+{NNQT}
+{Placeholder extraction}
+{placeholders}
+{From a Normalized Natural Question Template, extract the placeholders with regex pattern matching.}
+
+\processExample
+{What is the \{periodical literature\} for \{mouthpiece\} of \{Delta Air Lines\}.}
+{[periodical literature, mouthpiece, Delta Air Lines]}
+
+\processDiagram
+{(SPARQL, placeholders, template)}
+{Placeholder--template matching}
+{URI-to-placeholder mapping}
+{Both the queries and NNQTs follow a specific pattern depending on the sample's template.
+Hence, a mapping from URI to resp. placeholder can be determined.}
+
+\processExample
+{(select distinct ?obj where \{ wd:Q188920 wdt:P2813 ?obj . ?obj wdt:P31 wd:Q1002697 \},
+[periodical literature, mouthpiece, Delta Air Lines],
+<S P ?O ; ?O instanceOf Type>) }
+{\{ 
+	"wd:Q188920":    "Delta Air Lines", \\
+	"wdt:P2813":     "mouthpiece", \\
+	"wd:81002697":   "periodical literature", \\
+	"wdt:P31":       "instanceOf"
+\}}
+
+\processDiagram
+{(SPARQL, URI-to-placeholder mapping)}
+{GP to PGP}
+{PGP}
+{With the mapping, any URI in the original query can be replaced with its resp. placeholder,
+i.e., Graph Pattern to Placeholder Graph Pattern.}
+
+\processExample
+{(select distinct ?obj where \{ wd:Q188920 wdt:P2813 ?obj . ?obj wdt:P31 wd:Q1002697 \}, \{ 
+	"wd:Q188920":    "Delta Air Lines", \\
+	"wdt:P2813":     "mouthpiece", \\
+	"wd:81002697":   "periodical literature", \\
+	"wdt:P31":       "instanceOf"
+\}}
+{select distinct ?obj where \{ <Delta Air Lines> <mouthpiece> ?obj . ?obj <instance of> <periodical literature> . \}}
+
+\processDiagram
+{PGP}
+{SPARQL to SQUALL}
+{SQUALL}
+{SPARQL can be mapped to SQUALL, regardless if it contains URIs (GP) or placeholders (PGP),
+thus a SQUALL expression is obtained for the PGP.}
+
+\processExample
+{select distinct ?obj where \{ <Delta Air Lines> <mouthpiece> ?obj . ?obj <instance of> <periodical literature> . \}}
+{What is a <mouthpiece> of <Delta Air Lines> and has <instance of> <periodical literature>?}
+
+\processDiagram
+{(question, SQUALL)}
+{Prompt function}
+{Prompt}
+{Instantiates a prompt for a specific question--SQUALL pair.}
+
+\processExample
+{(What periodical literature does Delta Air Lines use as a mouthpiece?, What is a <mouthpiece> of <Delta Air Lines> and has <instance of> <periodical literature>?)}
+{
+Below is an instruction that describes a task, paired with an input that provides further context.
+Write a response that appropriately completes the request. \newline \newline
+\#\#\# Instruction: \newline
+Given the following sentence, your job is to generate SQUALL for it in the JSON format. \newline \newline
+\#\#\# Input: \newline
+What periodical literature does Delta Air Lines use as a mouthpiece? \newline \newline
+\#\#\# Response: \newline
+\{
+    "input": "What periodical literature does Delta Air Lines use as a mouthpiece?",
+    "squall": "What is a <mouthpiece> of <Delta Air Lines> and has <instance of> <periodical literature>?"
+\}
+}
+
+\processDiagram
+{prompt}
+{LLM}
+{generated output}
+{Given the prompt, the LLM is trained to ``replicate'' it.}
+
+\newpage
+\section{Index Creation}
+
+The ontology is mapped to an RDF dataset consisting of triples (subject, predicate, object),
+from an index is created.
+
+\processDiagram
+{RDF triple}
+{Get rdfs:label}
+{textual triple}
+{Get the rdfs:label of the subject, predicate and object.
+For triple elements that are literals instead of URIs, the literal itself is returned, since it is already a string.}
+
+\processExample
+{(http://orkg.org/orkg/resource/R57674, http://orkg.org/orkg/predicate/P27, "Woo E")}
+{("The interaction between ...", "author", "Woo E.")}
+
+\processDiagram
+{textual triple}
+{Encode triple}
+{triple's embeddings}
+{Use a text encoder model to map the subject, predicate and object text to embeddings.}
+
+\newpage
+\section{RAG Model}
+
+\processDiagram
+{question}
+{Index}
+{top-$k$ vertices and top-$k$ edges}
+{For a given question string, retrieve the top-$k$ vertices and top-$k$ edges with the highest similarity between the
+string and their respective rdfs:labels.}
+
+\processDiagram
+{vertices and edges}
+{Similarity Ranking}
+{ranked vertices and edges}
+{Rank a set of vertices and edges with related similarity scores from high to low.}
+
+\processDiagram
+{ranked vertices and edges}
+{Prize function}
+{prized vertices and edges}
+{Assign prizes to vertices and edges based on rank: the higher its rank the higher its prize.}
+
+\processDiagram
+{(knowledge graph, prized vertices and edges)}
+{PCST}
+{minimum connected subgraph}
+{Given the knowledge graph, use the PCST algorithm to find the connected subgraph of the KG
+that maximizes the total prize minus its cost (proportional to its size).}
+
+Complete example from question to subgraph.
+
+\processExample
+{Provide a list of papers that have utilized the Depth DDPPO model and include the links to their code?}
+{
+node\_id,node\_attr,node\_uri \newline
+346,model,http://orkg.org/orkg/class/Model \newline
+26311,has model,http://orkg.org/orkg/predicate/HAS\_MODEL \newline 
+52733,has source code,http://orkg.org/orkg/predicate/HAS\_SOURCE\_CODE \newline 
+63664,contribution depth ddppo,http://orkg.org/orkg/resource/R131294 \newline
+200736,depth ddppo,http://orkg.org/orkg/resource/R123481 \newline
+... \newline \newline
+src,edge\_attr,dst,edge\_uri \newline
+111,Has Datasets,5274,http://orkg.org/orkg/predicate/P41003 \newline
+26311,type,226,http://www.w3.org/1999/02/22-rdf-syntax-ns\#type \newline
+63664,has model,200736,http://orkg.org/orkg/predicate/HAS\_MODEL \newline
+...
+}
+
+\processDiagram
+{question subgraph}
+{Graph Encoder}
+{subgraph embedding}
+{Make a graph embedding of the minimum connected subgraph using a graph encoder.}
+
+\processDiagram
+{graph embedding}
+{Projector}
+{aligned graph token}
+{The graph embedding is aligned with the text embedding space using a projector which is a trainable alignement layer.}
+
+% Prompt?
+
+\processDiagram
+{question}
+{Text embedder}
+{text tokens (embeddings)}
+{Using the text embedder of the frozen and finetuned base model, produce the text tokens.}
+
+\processDiagram
+{(aligned graph token, text tokens)}
+{Self-attention layers}
+{generated output}
+{The self-attention layers receive extra context from the graph token and the task from the text tokens, 
+to generate output containing SQUALL.}
+
+\processDiagram
+{generated output}
+{Output extraction}
+{SQUALL}
+{Using regex, extract SQUALL from the generated output.}
+
+\processExample
+{
+Below is an instruction that describes a task, paired with an input that provides further context.
+Write a response that appropriately completes the request. \newline \newline
+\#\#\# Instruction: \newline
+Given the following sentence, your job is to generate SQUALL for it in the JSON format. \newline \newline
+\#\#\# Input: \newline
+Provide a list of papers that have utilized the Depth DDPPO model and include the links to their code? \newline \newline
+\#\#\# Response: \newline
+\{
+    "input": "Provide a list of papers that have utilized the Depth DDPPO model and include the links to their code?",
+    "squall": "What is a <has source code> of a thing that has <has model> a <Model> X and has a <has benchmark> that has a
+					<has dataset> and X has a rdfs:label whose string matches 'Depth DDPPO'?"
+\}
+}
+{What is a <has source code> of a thing that has <has model> a <Model> X and has a <has benchmark> that has a
+<has dataset> and X has a rdfs:label whose string matches 'Depth DDPPO'?}
+
+\processDiagram
+{SQUALL}
+{SQUALL-to-SPARQL}
+{PGP}
+{Using the SQUALL-to-SPARQL translator, map SQUALL to PGP.}
+
+\processExample
+{What is a <has source code> of a thing that has <has model> a <Model> X and has a <has benchmark> that has a
+<has dataset> and X has a rdfs:label whose string matches 'Depth DDPPO'?}
+{select distinct ?code where \{ ?model a <Model>; rdfs:label ?model\_lbl . filter(str(?model\_lbl) = 'Depth DDPPO')
+?benchmark <has dataset> ?dataset . ?cont <has benchmark> ?benchmark . ?cont <has model> ?model; <has source code>
+?code . \}
+}
+
+\newpage
+\section{Training RAG Model}
+
+To train the RAG model, we need ground truth SQUALL, this is created as follows.
+The loss between the generated and ground truth SQUALL is used to update the weights of the non-frozen layers of the
+RAG model: graph encoder and projector.
+Starting point is the SciQA dataset, whose creation is explained in \Cref{s:sciqa}.
+
+\processDiagram
+{SPARQL}
+{URI extraction}
+{(sample, URIs)}
+{Extract the URIs from a SPARQL query.}
+
+\processExample
+{select distinct ?code where \{ ?model a orkgc:Model; rdfs:label ?model\_lbl . filter (str(?model\_lbl) = 'Depth DDPPO')
+?benchmark orkgp:HAS\_DATASET ?dataset . ?cont orkgp:HAS\_BENCHMARK ?benchmark . ?cont orkgp:HAS\_MODEL ?model;
+orkgp:HAS\_SOURCE\_CODE ?code . \}
+}
+{[a, orkgc:Model, rdfs:label, orkgp:HAS\_DATASET, orkgp:HAS\_BENCHMARK, orkgp:HAS\_MODEL, orkgp:HAS\_SOURCE\_CODE]}
+
+\processDiagram
+{(KG, URI)}
+{Get rdfs:label}
+{placeholder}
+{Query the knowledge graph for the rdfs:label of a URI, either from a vertex or edge.}
+
+\processExample
+{(ORKG, orkgp:HAS\_DATASET)}
+{has dataset}
+
+\processDiagram
+{(KG, GP)}
+{GP to PGP}
+{PGP}
+{Use ``URI extraction'', followed by ``Get rdfs:label'' for each URI, and replace URI with placeholder,
+to map each URI to a placeholder: GP to PGP.}
+
+\processExample
+{(ORKG, select distinct ?code where \{ ?model a orkgc:Model; rdfs:label ?model\_lbl . filter (str(?model\_lbl) = 'Depth DDPPO')
+?benchmark orkgp:HAS\_DATASET ?dataset . ?cont orkgp:HAS\_BENCHMARK ?benchmark . ?cont orkgp:HAS\_MODEL ?model;
+orkgp:HAS\_SOURCE\_CODE ?code . \},
+}
+{select distinct ?code where \{ ?model a <Model>; rdfs:label ?model\_lbl . filter(str(?model\_lbl) = 'Depth DDPPO')
+?benchmark <has dataset> ?dataset . ?cont <has benchmark> ?benchmark . ?cont <has model> ?model; <has source code>
+?code . \}
+}
+
+\processDiagram
+{PGP}
+{SPARQL to SQUALL}
+{SQUALL}
+{Map a PGP to a SQUALL expression using the SPARQL to SQUALL translator or by manual construction.}
+
+\processExample
+{select distinct ?code where \{ ?model a <Model>; rdfs:label ?model\_lbl . filter(str(?model\_lbl) = 'Depth DDPPO')
+?benchmark <has dataset> ?dataset . ?cont <has benchmark> ?benchmark . ?cont <has model> ?model; <has source code>
+?code . \}
+}
+{What is a <has source code> of a thing that has <has model> a <Model> X and has a <has benchmark> that has a
+<has dataset> and X has a rdfs:label whose string matches 'Depth DDPPO'?}
+
+\newpage
+\section{Linking}
+
+\newpage
+\section{LC-QuAD 2.0 Dataset Creation}
+\label{s:lc_quad}
+
+\processDiagram
+{TODO}
+{Wikipedia vital entity list}
+{TODO}
+{TODO}
+
+\processDiagram
+{TODO}
+{SPARQL template}
+{TODO}
+{TODO}
+
+\processDiagram
+{TODO}
+{Predicate list based on SPARQL}
+{TODO}
+{TODO}
+
+\processDiagram
+{TODO}
+{Subgraph generation}
+{TODO}
+{TODO}
+
+\processDiagram
+{TODO}
+{Template fitting}
+{TODO}
+{TODO}
+
+\processDiagram
+{TODO}
+{SPARQL}
+{TODO}
+{TODO}
+
+\processDiagram
+{Query}
+{NNQT}
+{Normalized Natural Language Template}
+{TODO}
+
+\processDiagram
+{TODO}
+{Verbalization}
+{Question}
+{TODO}
+
+\processDiagram
+{TODO}
+{Paraphrasing}
+{Paraphrased question}
+{TODO}
+
+\newpage
+\section{Sci-QA}
+\label{s:sciqa}
+
+
+\end{document}
+

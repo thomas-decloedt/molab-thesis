@@ -1,0 +1,182 @@
+\begin{appendices}
+
+\section*{Kepler16b Report}
+\addcontentsline{toc}{section}{Kepler16b Report}
+\label{appendix:kepler}
+
+This appendix presents an example of a report made using openCAESAR.\footnote{
+	Kepler16 demo project available at \url{https://github.com/opencaesar/kepler16b-example}.
+}\footnote{
+	Kepler16b demo report available at \url{https://www.opencaesar.io/kepler16b-example}.
+}
+
+\begin{figure}[H]
+	\includegraphics[page=1,width=0.75\textwidth]{images/kepler-report.pdf}
+	\caption{Kepler16b report example, page 1.}
+	\label{fig:keplerReport1}
+\end{figure}
+
+\begin{figure}[H]
+	\includegraphics[page=2,width=0.75\textwidth]{images/kepler-report.pdf}
+	\caption{Kepler16b report example, page 2.}
+	\label{fig:keplerReport2}
+\end{figure}
+
+\begin{figure}[H]
+	\includegraphics[page=3,width=0.75\textwidth]{images/kepler-report.pdf}
+	\caption{Kepler16b report example, page 3.}
+	\label{fig:keplerReport3}
+\end{figure}
+
+\newpage
+
+\section*{SciQA Templates}
+\addcontentsline{toc}{section}{SciQA Templates}
+\label{appendix:sciqa_sparqls}
+
+This appendix presents an example query (more specifically, a \gls{pgp}) for each template available in the SciQA dataset.
+The corresponding \gls{squall} expressions, which are (nearly) equivalent, are also provided,
+along with details on the method of acquisition.
+
+In some cases, a second projection variable
+--- representing the \mintinline{sparql}{rdfs:label} of the first
+--- was omitted to simplify the manual construction of the queries.
+Prior to handcrafting the \gls{squall} queries,
+the \gls{sparql} queries were further simplified while preserving their equivalence to the originals.
+For example, nested queries were flattened, see \Cref{lst:sciqa_5}.
+
+\begin{listing}[H]
+	\mint{text}{SPARQL:}
+	\inputminted{sparql}{src/listings/sciqa-reference-queries/t1.sparql}
+	\mint{text}{---}
+	\mint{text}{SQUALL:}
+	\inputminted{text}{src/listings/sciqa-reference-queries/t1.txt}
+	\mint{text}{---}
+	\mint{text}{# Handcrafted SQUALL: 'optional' not supported by SPARQL2SQUALL.}
+	\caption{SciQA example for template 1.}
+	\label{lst:sciqa_1}
+\end{listing}
+
+\begin{listing}[H]
+	\mint{text}{SPARQL:}
+	\inputminted{sparql}{src/listings/sciqa-reference-queries/t2.sparql}
+	\mint{text}{---}
+	\mint{text}{SQUALL:}
+	\inputminted{text}{src/listings/sciqa-reference-queries/t2.txt}
+	\mint{text}{---}
+	\mint{text}{/* Mapped SPARQL to SQUALL using SPARQL2SQUALL. */}
+	\caption{SciQA example for template 2.}
+	\label{lst:sciqa_2}
+\end{listing}
+
+\begin{listing}[H]
+	\mint{text}{SPARQL:}
+	\inputminted{sparql}{src/listings/sciqa-reference-queries/t3.sparql}
+	\mint{text}{---}
+	\mint{text}{SQUALL:}
+	\inputminted{text}{src/listings/sciqa-reference-queries/t3.txt}
+	\mint{text}{---}
+	\mint{text}{# Handcrafted SQUALL: 'optional' not supported by SPARQL2SQUALL.}
+	\caption{SciQA example for template 3.}
+	\label{lst:sciqa_3}
+\end{listing}
+
+\begin{listing}[H]
+	\mint{text}{SPARQL:}
+	\inputminted{sparql}{src/listings/sciqa-reference-queries/t4.sparql}
+	\mint{text}{---}
+	\mint{text}{SQUALL:}
+	\inputminted{text}{src/listings/sciqa-reference-queries/t4.txt}
+	\mint{text}{---}
+	\mint{text}{# Handcrafted SQUALL: Verbalization of aggregates not supported by SPARQL2SQUALL.}
+	\caption{SciQA example for template 4.}
+	\label{lst:sciqa_4}
+\end{listing}
+
+\begin{listing}[H]
+	\mint{text}{SPARQL:}
+	\inputminted{sparql}{src/listings/sciqa-reference-queries/t5.sparql}
+	\mint{text}{---}
+	\mint{text}{SQUALL:}
+	\inputminted{text}{src/listings/sciqa-reference-queries/t5.txt}
+	\mint{text}{---}
+	\mint{text}{# Handcrafted SQUALL: Verbalization of sub-queries not supported by SPARQL2SQUALL.}
+	\caption{SciQA example for template 5.}
+	\label{lst:sciqa_5}
+\end{listing}
+
+\begin{listing}[H]
+	\mint{text}{SPARQL:}
+	\inputminted{sparql}{src/listings/sciqa-reference-queries/t6.sparql}
+	\mint{text}{---}
+	\mint{text}{SQUALL:}
+	\inputminted{text}{src/listings/sciqa-reference-queries/t6.txt}
+	\mint{text}{---}
+	\mint{text}{/* Mapped SPARQL to SQUALL using SPARQL2SQUALL. */}
+	\caption{SciQA example for template 6.}
+	\label{lst:sciqa_6}
+\end{listing}
+
+\begin{listing}[H]
+	\mint{text}{SPARQL:}
+	\inputminted{sparql}{src/listings/sciqa-reference-queries/t7.sparql}
+	\mint{text}{---}
+	\mint{text}{SQUALL:}
+	\inputminted{text}{src/listings/sciqa-reference-queries/t7.txt}
+	\mint{text}{---}
+	\mint{text}{# Handcrafted SQUALL: Verbalization cannot be made non-ambiguous without brackets by SPARQL2SQUALL.}
+	\caption{SciQA example for template 7.}
+	\label{lst:sciqa_7}
+\end{listing}
+
+\begin{listing}[H]
+	\mint{text}{SPARQL:}
+	\inputminted{sparql}{src/listings/sciqa-reference-queries/t8.sparql}
+	\mint{text}{---}
+	\mint{text}{SQUALL:}
+	\inputminted{text}{src/listings/sciqa-reference-queries/t8.txt}
+	\mint{text}{---}
+	\mint{text}{/* Mapped SPARQL to SQUALL using SPARQL2SQUALL. */}
+	\caption{SciQA example for template 8.}
+	\label{lst:sciqa_8}
+\end{listing}
+
+\newpage
+
+\section*{Responsible Use of Generative Artificial Intelligence}
+\addcontentsline{toc}{section}{Responsible Use of Generative Artificial Intelligence}  
+\label{appendix:genAI}
+
+The use of generative \gls{ai} in this thesis has been carefully restricted to two specific use cases:
+serving as a writing assistant and a productivity enhancer.
+In particular, ChatGPT was utilized to refine the flow of pre-written passages,
+summarize chapters for use in introductions and conclusions,
+and expedite the creation of TikZ schematics and graphs.
+At no point was \gls{ai} used to generate content from scratch.
+
+\newpage
+
+\section*{Societal Reflection}
+\addcontentsline{toc}{section}{Societal Reflection}  
+
+Upon reflection,
+it became clear that certain Sustainable Development Goals were inherently aligned with the research process,
+even though they were not consciously adopted as guiding principles from the outset.
+
+Great care was taken to ensure responsible production throughout the methodology and experimentation phases.
+This was demonstrated by the judicious use of computational resources,
+highlighted by the selection of a comparatively smaller domain-specific model, i.e., the domain expert,
+which consumed significantly less computational power than, for example, a ChatGPT-based prompting approach.
+
+Transparency and accessibility have also been central to this work.
+Every step of the research has been explicitly documented and explained to ensure that the findings are accessible and
+reproducible, fostering inclusivity and openness in scientific research.
+
+Finally, this thesis originated at Polytechnique Montréal and was further developed upon my return to Ghent University.
+I hope that this work not only contributes to advancing academic knowledge
+but also fosters stronger collaborative ties between these two institutions.
+I will enthusiastically encourage and recommend similar exchange opportunities.
+
+\newpage
+
+\end{appendices}

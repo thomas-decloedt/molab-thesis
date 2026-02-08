@@ -1,0 +1,634 @@
+\chapter{Preliminaries}
+
+% General
+A significant body of research has been dedicated to streamlining and simplifying tasks
+such as writing code, documentation, reports, etc.
+characterized by a repetitive, tedious or otherwise prohibitively technical nature.
+In the same vein current \gls{mbse} techniques exist for generating documents such as reports from model viewpoints
+\cite{delpModelBasedDocument2013}.
+Viewpoints are used in \glsentrylong{se}, but in other domains as well, e.g., software engineering.
+A concrete example is the physical viewpoint in the context of space systems.
+This viewpoint focuses on aspects such as the physics of motion, system components, their interconnections,
+and external forces.\footnote{
+	Example from \url{https://web.archive.org/web/20100527225452/http://trs-new.jpl.nasa.gov/dspace/bitstream/2014/39798/1/06-1543.pdf}.
+}
+The output resulting from a specific viewpoint is referred to as a view;
+\gls{cad} models representing physical systems are one example,
+the reports used in \gls{mbse} another.
+While the techniques used in \gls{mbse} to generate reports are useful,
+they can be supplemented with new \gls{ai}-based approaches.
+
+% Why this research?
+Some fundamental issues arise in the proposed approaches, often at least one of two common presuppositions ought to be 
+met for the proposition to be viable.
+There is either an abundance of high-quality information related to the domain,
+typically in the form of an extensive dataset comprising domain-specific questions and their corresponding queries.
+Or, the domain is implicitly assumed to be sufficiently well-known,
+for example, when prompting a \gls{pllm} has sufficiently seen information about the domain during its pre-training
+such that it can be effective given a proper prompting strategy.
+A contrived example can highlight the issue, take for example a domain that is private
+for which no data engineering has of yet been done, hence, high-quality datasets are missing.
+Clearly, when domain-specific information is not publicly available, \glspl{pllm} become ineffective.
+Furthermore, the investment required to create the necessary datasets can be prohibitive,
+especially if manual annotation is chosen,
+as it demands a high level of domain-specific expertise from data annotators \cite{liSemanticParsingLimited2023}.
+When neither of these conditions is met, this situation
+--- hereafter referred to as data scarcity
+--- poses a significant barrier to progress.
+Addressing and overcoming this challenge is the central motivation for the research presented here,
+as it has been identified as the primary obstacle in advancing model reporting.
+
+% Rest of this section
+If a method existed that could flawlessly answer questions, generate queries, and adapt effectively to any domain
+--- no matter how obscure
+--- then implementing model reporting would be primarily a matter of engineering rather than a conceptual challenge.
+However, the reality is more complex.
+The subsequent sections will explore existing methods,
+highlighting their relevance while demonstrating that they are either incompatible with data-scarce scenarios
+or neither straightforward to implement nor trivial to adapt.
+This analysis underscores the necessity of the research presented in this work.
+First, the foundational background of the core technologies underpinning this work is introduced.
+Next, a cursory survey of relevant literature and industry practices for document generation in other domains is presented.
+Finally, the limitations of previous approached are discussed.
+
+\section{Relevant NLP Technologies}
+
+% What?
+
+This section explores key \gls{nlp} technologies that form the foundation of the research presented in this work.
+The primary focus is on the following core techniques:  
+
+\begin{itemize}
+
+	\item \textbf{\glsentrylong{qa}}:
+		A discipline focused on creating systems capable of automatically answering natural language questions posed by users.  
+
+	\item \textbf{\glsentrylong{sp}}:
+		A task that involves mapping natural language to machine-understandable representations.  
+
+	\item \textbf{\glsentrylong{da}}:
+		A field concerned with applying an \gls{ml} domain, trained on a source domain,
+		to a related but different target domain.
+
+	\item \textbf{\glsentrylong{cnl}}:
+		A subset of natural languages that have restricted grammar and vocabulary, and are thus less complex.
+		
+	\item \textbf{\glsentrylong{rag}}:
+		A technique that integrates \glsentrylong{ir} capabilities with generative \gls{ai}
+		to enhance the performance of models.
+
+\end{itemize}
+
+% Why relevant?
+
+These technologies are critical in addressing the research challenges related to data scarcity
+and enabling model reporting in \gls{mbse} domains.
+Recent \gls{qa} systems informed the general architecture for the proof-of-concept implementation of the agent.
+Meanwhile, \gls{sp} played a more specialized role, informing this work on tackling text-to-\gls{sparql} task.
+It proved essential for realizing the domain expert used for generating the queries necessary to create
+relevant artifacts like visualizations and explanations required for model reporting.
+The final three technologies all played a key role in overcoming data scarcity:
+\gls{da} enabled the transfer of knowledge from well-resourced domains to the data-scarce ones of \gls{mbse},
+the use of a \gls{cnl} contributed by lowering training data requirements,
+and \gls{rag} aimed to enhance the performance of the domain expert by incorporating information unseen during training.
+
+%%% Subsections
+
+% Semantic Parsing, Question Answering and Domain Adaptation : subsection
+% Controlled Natural Languages : subsection
+% Retrieval Augmented Generation : subsection
+
+% For each subsection:
+% What?
+% Why relevant?
+% Why not straightforwardly implementable?
+
+\subsection{Question Answering, Semantic Parsing and Domain Adaptation}
+\label{s:QASPDA}
+
+% Formal meaning representation
+% Representation of meaning
+% Logical form
+
+% Intro
+This section introduces three foundational technologies: \gls{qa}, \gls{sp}, and \gls{da}.
+These are prioritized as they are integral to the approach developed in this work,
+and their roles are deeply interconnected within the context of model reporting.
+Following an overview of each technology, their relevance to the research is analyzed,
+emphasizing the challenges that make their implementation in this domain non-trivial.
+
+% What
+
+\paragraph{QA}
+
+Firstly, \gls{qa} is a discipline at the intersection of \gls{nlp} and \gls{ir} that studies systems concerned with
+answering questions posed by humans.
+Typically, the \gls{qa} approach involves three key steps:
+understanding the question (i.e., \glsentrylong{nlu}),
+retrieving relevant information (i.e., \glsentrylong{ir}),
+and generating the answer.
+The information source a \gls{qa} system can retrieve from varies widely depending on the application.
+One examples would be technical support where the source of information could be a system's documentation.
+Interest in \gls{qa} has surged with the advancements in deep learning technologies 
+\cite{abdel-nabiDeepLearningbasedQuestion2023}.
+
+\paragraph{SP}
+
+Semantic parsing is a task in \gls{nlp} that involves translating natural language statements into corresponding logical
+forms.
+If, for example, the following question is posed: 
+\mintinline[breaklines]{text}{Tell me the name of the author of PaperX?},
+it could be parsed into a dependency graph, see \Cref{fig:dependencyGraph}.
+
+\begin{figure}[h]
+	\centering
+	\includesvg[width=0.95\textwidth]{images/dependency-graph}
+	\caption{The dependency graph of an example question.}
+	\label{fig:dependencyGraph}
+\end{figure}
+
+The task is alternatively defined as converting natural language to formal representations of meaning
+or meaning representations.
+In any case, the resulting output of \gls{sp} is diverse and includes
+constituency graphs,
+dependency graphs,
+database queries,
+query graphs \cite{yihSemanticParsingStaged2015}, 
+semantic graphs \cite{reddyLargescaleSemanticParsing2014},
+lambda-calculus \cite{wongLearningSynchronousGrammars2007},
+etc.
+Furthermore, various natural languages are possible, and the logical forms can be task-specific,
+i.e., dependent on the area of application.
+Examples of application areas are machine translation and, more pertinently, \gls{qa}.
+\gls{sp} has benefited from deep learning's progress \cite{shaRetrievalAugmentedKnowledgeGraph2023,
+chenHiQAHierarchicalContextual2024}.
+
+\paragraph{DA}
+
+Domain adaptation is categorized as transductive transfer learning in the \gls{nlp} domain.
+It aims to leverage data and knowledge from a source domain to the benefit of a target domain under the assumption
+that source and target domain are distinct,
+that the task is identical
+and that some (unlabeled) target domain data is available at training time
+\cite{panSurveyTransferLearning2010}.
+As a concrete example, a neural dependency parser could be trained to parse English sentences
+and be adapted to a less common language through \glsentrylong{da}.
+
+%\textit{Transductive transfer learning} has been characterized \cite{panSurveyTransferLearning2010}
+%as aiming to improve the learning of a target predictive function $f_T$,
+%given a source $\mathcal{D}_S$ and target target domain $\mathcal{D}_T$
+%with corresponding learning tasks $\mathcal{T}_S$ and $\mathcal{T}_T$, respectively.,
+%where $\mathcal{D}_S \neq \mathcal{D}_T$ and $\mathcal{T}_S = \mathcal{T}_T$,
+%and some unlabeled target-domain data must be available at training time.
+
+\paragraph{Relatedness of QA and SP: Domains and Knowledge Bases}
+
+The domains of \gls{qa} and \gls{sp} naturally converge when investigated in the context of \glsentryfullpl{kb}.
+In general, a \gls{kb} is a structured repository designed to store, manage, and retrieve information efficiently.
+They are widely used to represent domains and can, for example, be utilized to represent systems in \gls{mbse}.
+Typically, \glspl{kb} consist of sentences stated in a particular formal language,
+and information can be retrieved from the repository using another formal language called the query language.
+When the data in a \gls{kb} is organized in a graph structure, it is referred to as a \gls{kg}.
+A notable example is Wikidata, a \gls{kg} that serves as a central knowledge repository,
+supplying structured data to Wikipedia and other Wikimedia projects.
+The convergence of \gls{qa} and \gls{sp} can be illustrated using the previous question
+if it is stated in the context of, for example, a particular domain consisting of scientific papers and their authors,
+implemented as a \gls{kg}.
+Instead of parsing the question into a constituency graph, it could then be translated into a \gls{sparql} query:
+\mintinline[breaklines]{sparql}{SELECT DISTINCT ?x1 WHERE { :PaperX :author ?x2 . ?x2 :name ?x1 . }}.
+Execution of the query would retrieve the relevant information needed by a \gls{qa} system to answer the question.
+In this fashion a \gls{qa} system could leverage \gls{sp} techniques in order to answer a user's question about
+a particular domain.
+In \gls{qa}, when the answers are derived from a \gls{kb} (or a \gls{kg}),
+the task is referred to as \gls{kbqa} (or \gls{kgqa}).
+However, \gls{sp} is not a necessary component of a \gls{kbqa} system.
+
+\paragraph{Relevance of DA}
+
+Meanwhile, many \gls{sp} scenarios are domain-specific \cite{liSemanticParsingLimited2023},
+meaning that for the same task variations of a semantic parser are needed if the target domains differ.
+The previous question could be parsed into a different query if the domain did not consist of scientific papers,
+but instead was concerned with newspapers, yet intuitively there are similarities.
+Hence, adapting a \gls{sp} model from a source domain to a target domain has previously been the topic of research 
+\cite{liSemanticParsingLimited2023} using transfer learning
+with some work aimed focusing on using domain adaptation \cite{liDomainAdaptationSemantic2020}.
+Interest in domain adaptation is driven by a desire to overcome data scarcity in domains of interest 
+since contemporary neural semantic parsing techniques usually require significant annotated datasets
+\cite{jiangSurveySemanticParsing2024, liSemanticParsingLimited2023, liDomainAdaptationSemantic2020}.
+However, transferring a trained neural model to a new domain is inherently challenging,
+primarily due to differences in meaning representations across domains \cite{liDomainAdaptationSemantic2020}.
+
+% Why relevant?
+
+These three technologies are central to model reporting paradigm.
+%% QA
+The proof-of-concept implementation of the proposed paradigm centers on openCAESAR,
+a representative \gls{mbse} framework detailed in \Cref{c:proposedSolution}.
+This framework employs a \gls{kg} to model systems.
+As indicated earlier, in this context answering stakeholder requests entails
+understanding the question,
+retrieving information from the \gls{kg} through querying,
+and generating the answer in the expected.
+Hence, from the \gls{qa} point of view,
+the proposed implementation of model reporting can be seen as a straightforward application.
+As will be discussed later on, the proof-of-concept follows a \gls{kgqa} pipeline combined with further downstream
+tasks to achieve the expected results such as visualizations and natural language answers.
+%% SP
+Now it is clear how \gls{sp} is vital: it enables those later tasks crucial to the paradigm.
+Namely, \gls{sp} provides the logical forms which are needed to query the system.
+Note that although \gls{qa} cane be done without \gls{sp}, as mentioned previously,
+this is not the case for model reporting where an explicit logical form is required.
+\Cref{s:requirements} elaborates further upon this requirement.
+%% DA
+Finally, overcoming data scarcity, which is ubiquitous in \gls{mbse},
+will be achieved using effective \gls{da} strategies applied to the model used for \gls{sp}
+(i.e., the domain expert).
+
+% Why not straightforwardly implementable?
+
+Although these three technologies are applicable to model reporting,
+it remains a significant challenge to apply previous work because of data scarcity.
+While some \gls{qa} and \gls{sp} approaches do target data-scarce conditions,
+their applicability is constrained particularly when addressing larger domains,
+making it hard to apply to \gls{mbse}.
+This section concludes with some examples from the literature.
+%% QA
+A relevant \gls{qa} system is \glsentryfull{kgqan} \cite{omarUniversalQuestionAnsweringPlatform2023},
+which aims to be universal and capable of answering user questions for any arbitrary \gls{kg}.
+It employs a two-stage process:
+a coarse stage for understanding the question
+and a fine stage resulting in the final logical forms (e.g., \gls{sparql} queries).
+The question understanding step uses a domain-independent \gls{lm} to generate sketches of the logical forms
+(i.e. lists of triples),
+while the second step finalizes them without relying on a trained model.
+The platform's approach diverges from traditional \gls{sp} in an attempt to be applicable to more than one domain
+without domain specific training data.
+The approach results suffers fundamental limitations though as detailed in \Cref{s:kgqan}.
+Many natural language utterances cannot be correctly converted into equivalent logical forms due to the
+limitations of the question understanding \gls{llm} during the coarse stage,
+and the reliance on heuristic methods for the fine stage.
+These constraints highlight the need for alternative strategies to address the demands of model reporting.
+%% SP
+ProtoParser \cite{liSemanticParsingLimited2023} exemplifies a neural semantic parser designed for data-scarce conditions.
+It operates in two stages: template generation and slot filling,
+leveraging synthetic data generation and transfer learning to manage data scarcity.
+ProtoParser’s evaluation spans three domains with predicate counts of 15, 24, and 88, respectively,
+where the number of unique predicates is a measure of the size of a domain represented by a \gls{kg}.
+Although ProtoParser is evaluated for new, i.e., unseen predicates,
+it remains unclear how its performance scales to more complex, encompassing domains.
+For instance, the domain evaluated later in this thesis involves nearly \num{7000} unique predicates
+(see \Cref{s:knowledge_graph_and_benchmark}).
+This raises doubts about the feasibility of applying ProtoParser to model reporting tasks,
+where the diversity and scale far exceed those in ProtoParser’s tested scenarios.
+ProtoParser assumes that domain knowledge
+--- acquired during training on structured data, such as database schematics 
+--- can generalize to unseen predicates within the same domain.
+%% DA
+While ProtoParser does not employ domain adaptation, other approaches do,
+\cite{liDomainAdaptationSemantic2020, suCrossdomainSemanticParsing2017, rayFastDomainAdaptation2019}.
+However, these methods share similar limitations:
+they focus on the same domains with relatively few predicates,
+between 15 and 45 predicates \cite{wangBuildingSemanticParser2015}, 
+which is not representative of the scale of \glspl{kg} used in \gls{mbse}.
+%Futhermore, \cite{rayFastDomainAdaptation2019} considers an alternative type of \gls{da}
+%focusing on personalization rather than general scalability.
+%The proposed approach adapts to user vocabulary and paraphrase variations,
+%focusing on the natural language component of semantic parsing rather than the logical forms.
+%This flavor of \gls{da} assumes a source domain and a slightly deviating target domain,
+%making it unsuitable for handling entirely new and highly-specialized domains.
+
+\subsection{Controlled Natural Languages}
+\label{s:cnl}
+% CNLs are also logical forms, i.e., database queries
+
+% What are CNLs?  
+A \glsentryfull{cnl} is a language characterized by a restricted grammar and vocabulary,
+making it less complex than natural languages.
+These \glspl{cnl} are designed for various purposes, such as enhancing readability for non-native speakers.  
+In the context of this thesis, their primary significance lies in their applicability to \gls{nlp}.
+Specifically, they are employed for their capacity to intuitively and naturally represent formal notations,
+such as \gls{sparql} queries \cite{kuhnSurveyClassificationControlled2014}.  
+The semantic parser introduced in this work is tailored to address the challenge of data scarcity,
+and \glspl{cnl} play a supporting role in this effort.
+The following sections will elucidate how leveraging a \gls{cnl} contributes to mitigating this central obstacle to
+model reporting.
+Details of the semantic parser can be found in \Cref{c:methodology}.
+
+% Why relevant?
+Neural semantic parsers have garnered significant attention,
+particularly with advancements in \glspl{llm} and \glspl{pllm}.
+These parsers typically generate logical forms such as \gls{sql} or \gls{sparql} queries.
+However, alternative output formats have also been investigated.
+A notable hypothesis proposed by \cite{lehmannLanguageModelsControlled2023} suggests that generating outputs in
+\gls{cnl} instead of traditional logical forms can enhance performance while reducing the data requirements for the
+underlying \glspl{llm}.
+This highlights the relevance of \glspl{cnl} to this work:
+their use has the potential to decrease the data demands of the semantic parser,
+a critical factor in addressing the challenges of data scarcity.
+
+% What is SQUALL?
+A whole host of \glspl{cnl} exists, but this thesis only focuses on one: \gls{squall}.
+It is a \gls{cnl} and a formal language that can be unambiguously translated or mapped into \gls{sparql}.
+\gls{squall} covers all \gls{sparql} constructs,
+including many of \gls{sparql} 1.1 \cite{ferreSQUALLExpressivenessSPARQL2014},
+e.g., it can be used to query and update \gls{rdf} graphs.
+Returning to the earlier example question:
+\mintinline[breaklines]{text}{Tell me the name of the author of PaperX?},
+which was translated to a \gls{sparql} query:
+\mintinline[breaklines]{sparql}{SELECT DISTINCT ?x1 WHERE { :PaperX :author ?x2 . ?x2 :name ?x1 . }}.
+This query can be mapped to the following equivalent \gls{squall} expression:
+\mintinline[breaklines]{text}{What is the name of the author-s of PaperX?},
+which is not significantly different from the original natural language question upon first sight.
+However, a very particular sentence structure is used, and the vocabulary is indeed restricted.
+
+% Why SQUALL relevant?
+As introduced in \Cref{s:QASPDA}, the proof-of-concept implementation targets a domain represented by a \gls{kg},
+more specifically, an \gls{rdf} graph.
+\gls{rdf} graphs are queried in \gls{sparql}, hence a \gls{cnl} mappable to \gls{sparql} was needed.
+It was shown \cite{lehmannLanguageModelsControlled2023} that \gls{squall} is a good choice
+likely due to its remarkable similarity to natural language,
+leading to relatively good performance.
+
+% Why not straightforwardly implementable?
+Although the use of \glspl{cnl} has been identified as a promising new avenue
+\cite{dialloComprehensiveEvaluationNeural2024} for \gls{kgqa} and \gls{sp},
+\gls{qa} implementations applicable to model reporting were not found.
+Furthermore, a difficulty related to neural \gls{sp} is that \glspl{llm} generally lack extensive knowledge of the
+target \glspl{cnl} due to the infrequent occurrence of \glspl{cnl} in the training data of \glspl{llm}.
+Prompting these models to generate \gls{cnl} expressions seems highly non-trivial.  
+Indeed, the work \cite{lehmannLanguageModelsControlled2023} that proposed this hypothesis relied on fine-tuning
+\glspl{llm} using custom datasets consisting of natural language utterance/\gls{cnl}-expression pairs.  
+Thus, data scarcity once again presents a significant and unresolved hurdle.
+
+\subsection{Retrieval Augmented Generation}
+\label{s:rag}
+
+% What?
+\gls{rag} models have been suggested \cite{lewisRetrievalAugmentedGenerationKnowledgeIntensive2020}
+as a way to tackle knowledge-intensive \gls{nlp} tasks by incorporating non-parametric external knowledge in \glspl{lm}.
+Since then numerous novel variations have proliferated, occasionally dubbed an architecture, a framework or a paradigm.
+Irrespective of the particular \gls{rag} description utilized three steps and corresponding components are essential:
+retrieval, augmentation and generation \cite{gaoRetrievalAugmentedGenerationLarge2024}.
+The first component is responsible for retrieving knowledge relevant to the task (e.g., \gls{kgqa}).
+Knowledge can be contained in many formats, including textual documents or graphs.
+Augmentation refers to the process of enhancing retrieval to optimize \gls{llm} generation.
+This process can be employed at different stages, including \gls{llm} pre-training, fine-tuning, or inference.  
+A notable example of augmentation is iterative retrieval,
+which involves progressively refining search queries based on feedback from previous results.
+This approach aims to improve the search process by iteratively narrowing the focus to the most relevant information
+through a dynamic feedback loop \cite{gaoRetrievalAugmentedGenerationLarge2024}.
+The final component is the generator, typically involving only a generation step by the \gls{llm}.
+However, post-processing the generated output can also be included to enhance results.
+
+% Why relevant?
+The reason for introducing \gls{rag} is to solve the problems associated with the lack of an
+\gls{llm}'s knowledge.
+One of these issues are the well-researched hallucinations, shown to have many causes,
+including the inevitably limited or outdated knowledge contained in the \gls{llm}'s parameters
+\cite{huangSurveyHallucinationLarge2024, gaoRetrievalAugmentedGenerationLarge2024}.
+\gls{qa} is a prominent example of a task where \gls{rag} is beneficial,
+but it is applied to a range of generative tasks, 
+for example, dialogue response generation and machine translation \cite{liSurveyRetrievalAugmentedText2022}.
+Its usefulness to \gls{qa} stems from the inclusion of external knowledge not contained in the \gls{lm}'s weights 
+which can increase accuracy and credibility \cite{gaoRetrievalAugmentedGenerationLarge2024}.
+
+% Why not straightforwardly implementable?
+As before, two complications present themselves: data scarcity and domain size.  
+Both factors increase the complexity of information retrieval.  
+The large domain size, in particular, makes the prompting of \glspl{pllm} non-trivial.  
+Thus, identifying the relevant facts from the domain and incorporating them as manageable input to a model is challenging.
+
+\subsection{Synthesis of Relevant Technologies}
+
+To enable effective model reporting, a \gls{qa} system framework is adopted,
+with the semantic parser serving as its central component.
+This parser is designed to generate queries that address questions posed by stakeholders.
+Leveraging domain adaptation, the model utilizes data from data-rich domains to mitigate the challenge of data scarcity. 
+
+Additionally, the semantic parser outputs a \gls{cnl} known as \gls{squall},
+which has been shown to reduce data requirements, thereby further addressing the issue of data scarcity.
+This specialized parser is referred to as the \gls{squall} expert.
+
+Finally, the integration of the \gls{squall} expert into a \gls{rag} architecture incorporates non-parametric domain
+knowledge.
+This approach aims to address the inherent limitations of \glspl{llm} in handling knowledge-intensive tasks such as
+\gls{qa} and \gls{sp}.
+The resulting \gls{rag} model, previously referred to as the domain expert,
+represents the culmination of this synthesis of technologies.
+
+\section{Related Frameworks for Automating Reporting}
+
+% What?
+% Why relevant?
+% Why not straightforwardly implementable?
+
+Numerous paradigms and frameworks have attempted to leverage \gls{ai} to assist, automate, accelerate or simplify
+the often tedious and time-consuming tasks of creating documentation, presentations, reports, etc.
+These approaches span a spectrum of automation, from entirely manual to fully automated,  
+with assisted generation occupying an intermediate position.  
+Interest in this area has grown significantly, and with recent advancements in deep learning,
+practical implementations have begun to proliferate.  
+Examples include an interactive agent for generating financial reports, such as slide decks,
+from natural language \cite{raviDocuBotGeneratingFinancial2021},  
+report generation from medical images \cite{biswalCLARAClinicalReport2020, messinaSurveyDeepLearning2022},  
+bash command generation \cite{agarwalNeurIPS2020NLC2CMD2021},  
+and agent-assisted presentation generation from data science notebooks \cite{wangSlide4NCreatingPresentation2023}.  
+To provide context for this work and clarify the rationale behind its design choices,  
+some examples that have tackled automating reporting are discussed below.  
+
+% Remainder
+Concretely, this section explores the following:
+
+\begin{itemize}
+
+	\item \textbf{Reporting Systems for \gls{sql} Databases}:
+		Systems that simplify querying of \gls{sql}-based databases using natural language,
+		facilitating enterprise reporting and analytics, often incorporating \glspl{rag} and \gls{llm}.
+
+	\item \textbf{\gls{ai} Agents}:
+		\gls{ai} assistants that help automate or augment tasks like creating reports or presentations from computational
+		notebooks, emphasizing human-in-the-loop approaches for maintaining coherence and flexibility.
+
+	\item \textbf{\gls{kbqa} and \gls{kgqa} Systems}:
+		Frameworks focusing on answering user questions through querying \glspl{kg} using \glspl{llm} and 
+		retrieval techniques,
+		aiming to enhance knowledge-intensive tasks with \gls{rag} paradigms and non-parametric memory.
+
+\end{itemize}
+
+\subsection{Reporting Systems for SQL Databases}
+
+% What?
+Systems simplifying reporting by enabling natural language querying of \gls{sql}-based databases have been previously suggested.
+An end-to-end Query Enterprise Data (QED) system was proposed \cite{joshiNaturalLanguageInteractive2020} to
+facilitate natural language and conversational search on large databases,
+it is aimed at enterprise reporting and analytics and uses graphical, tabular, and textual reporting interfaces.
+As possible future research, extending the approach to knowledge graphs was also mentioned.
+Vanna is another \gls{kbqa} system whose approach also hinges on the formation of formal language
+(i.e., \gls{sql}) queries explicitly allowing post-processing such as tables and charts.\footnote{
+	Vanna available at \url{https://vanna.ai}.
+}
+It is a newer framework making use of the \gls{rag} paradigm.
+Finally, FinSQL \cite{zhangFinSQLModelAgnosticLLMsbased2024} is a financial analysis framework designed for financial
+professionals also based on text-to-\gls{sql}.
+It addresses the technical hurdles faced by stakeholders lacking programming skills to interact with the \glspl{kb}
+used in the finance sector. 
+To overcome these barriers, the authors present a text-to-\gls{sql} framework for financial analysis
+with interactive features
+--- although these are only mentioned in passing 
+such as context retention, natural language summaries, and various forms of visualization.
+
+% Why relevant?
+These reporting systems have quite similar aims as model reporting.
+Key observations include:
+
+\begin{itemize}
+
+	\item The need for interactivity and trust in a reporting system, 
+		and the use of synthetic data to combat data scarcity \cite{joshiNaturalLanguageInteractive2020}.
+		To combat data scarcity in industrial settings, synthetic data is generated to train the models.
+
+	\item The integration of \glspl{llm} and \gls{rag} forms the core foundation of Vanna's functionality.
+
+	\item Achieving data efficient domain transfer
+		(i.e., reusing base model for different databases)
+		through \gls{lora} modules \cite{zhangFinSQLModelAgnosticLLMsbased2024}.
+
+\end{itemize}
+
+% Why not straightforwardly implementable?
+However, it is important to note that FinSQL, QED and Vanna
+are primarily designed for relational databases and the text-to-\gls{sql} task.
+In contrast, the models used in \gls{mbse} are defined and queried differently.
+For instance, \gls{sysml}/\gls{uml} models are queried using \gls{ocl}.
+
+Similarly, openCAESAR and its associated models cannot be queried using these techniques.
+For further details on querying in the context of the proof-of-concept implementation,
+see \Cref{s:particularsProofOfConcept}.
+
+\subsection{AI Agents}
+% Notebooks to slides
+
+% What?
+Slide4N \cite{wangSlide4NCreatingPresentation2023} is an \gls{ai} assistant that helps data scientists to create slides
+from computational notebooks.
+A human-in-the-loop solution was chosen, resulting in an interactive framework, instead of going for full automation.
+Downsides to full automation that where mentioned include limited choice in generation, and decreased efficiency if
+generated content is not satisfactory.
+The architecture consists of a front-end and a \gls{nlp} powered back-end.
+
+% Why relevant?
+Slide4N's relevancy to model reporting is clear through analogy: 
+ideally an \gls{ai} assistant would help \gls{mbse} stakeholders to create reports from models.
+Like Slide4N the proposed proof-of-concept also introduces a human-in-the-loop approach
+instead of going for complete automation.
+That way some creative control over the final model report is kept.
+
+\subsection{Knowledge Base/Graph Question Answering}
+%\TODO{SPARQL-QA-v2 system for Knowledge Base Question Answering}
+
+% What?
+Various frameworks have been suggested in the literature focused on chatting with \glspl{kg}.
+Common techniques that stand out are the use of \glspl{llm} to power conversations
+and nearest neighbor-based embedding retrieval techniques.
+Utilizing \glspl{llm} in graph analysis has been explored \cite{pengChatGraphChatYour2024},
+they submit a framework that allows chatting with for example chemical molecules or social networks.
+A user's questions are answered through a dialog, and their analysis performed, including graph comparison and cleaning.
+The graph operations needed to do this are implemented through consecutive \gls{api} calls, dubbed chains.
+Similar to document embeddings, the calls are embedded in a space.
+The user prompt is made up of an inputted text and an uploaded graph.
+The first is embedded into the \gls{api} space after which the most similar calls are retrieved using an approximate
+nearest neighbor search.
+While the latter is first sequentialized, then using the retrieved \gls{api} calls and sequentialized graph, 
+an \gls{llm} constructs a chain of calls to operate on the graph in order to achieve the user's question.
+The G-Retriever chat graphing framework \cite{heGRetrieverRetrievalAugmentedGeneration2024} puts emphasis on \gls{kgqa} for
+real-world graphs.
+It tackles the problem using an \gls{llm} and the \gls{rag} paradigm.
+Initially the vertices and edges of the target graph are embedded  using a \gls{plm} 
+and stored in a nearest neighbor data structure.
+When the user poses a question it is embedded by the same \gls{plm} after which the $k$ most similar 
+--- based on a cosine similarity function
+--- vertices and edges are retrieved and from which a connected subgraph is constructed using a
+modified Prize-Collecting Steiner Tree algorithm.
+The prize, i.e., value of both vertices and graphs, is determined by the cosine similarity.
+The algorithm finds the connected subgraph with maximal total prize subtracted by a cost function,
+dependent on the size of the subgraph.
+%\TODO{Check paper, not described as reg. param.}
+The cost functions act as a regularization parameter,
+without it the biggest connected subgraph would always be chosen.
+\glspl{llm} have limited context windows, hence this regularization helps when scaling to bigger graphs.
+A final example is RAG-end2end \cite{siriwardhanaImprovingDomainAdaptation2023},
+a \gls{rag} paradigm proposed to specifically handle \gls{qa} on \glspl{kb} of specialized domains.
+
+These first two approaches are relevant to the proof-of-concept implementation as they specifically address inquiring into
+\glspl{kg} using natural language while G-Retriever and RAG-end2end exploit the \gls{rag} paradigm incorporating a \gls{kg} and
+\gls{kb} as non-parametric memory, respectively.
+However, these approaches do not perform explicit query construction and the latter two have significant data requirements.
+
+\subsection{Recap of Related Frameworks}
+
+In this section, multiple frameworks were explored that were aimed at automating reporting using \gls{ai}.
+
+Systems like Vanna and FinSQL focus on natural language
+querying of \glspl{sql} databases, emphasizing \gls{llm} and \gls{rag} paradigms,
+though they target relational databases, not \gls{mbse} models.
+   
+An assistant like Slide4N assists in generating reports from computational
+notebooks using a human-in-the-loop approach, importantly maintaining some level of creative control.
+   
+Frameworks like G-Retriever and RAG-end2end utilize \glspl{llm} and \gls{rag} paradigms for querying \glspl{kb},
+focusing on incorporating non-parametric memory.
+
+These frameworks highlight valuable techniques, though their focus on relational databases and heavy data dependencies
+pose difficulties for \gls{mbse} and its data-scarce domains.
+
+\section{Open Challenges}
+\label{s:limitations}
+
+%\TODO{Verify above claim
+%	\cite{reydAssessingGeneralizationCapabilities2023}
+%	\cite{dialloComprehensiveEvaluationNeural2024}
+%	Can't adapt to new templates hence neither new domains?
+%}
+
+The current state of research presents several limitations to model reporting for \gls{mbse}.
+
+Existing approaches in \gls{qa} and \gls{sp} (see \Cref{s:QASPDA})
+do not fully address the unique demands of model reporting.
+The scale and nature of \gls{mbse} domains complicate the application of these solutions.
+
+% QA, SP & DA
+Many \gls{qa} and \gls{sp} approaches depend on labeled training data for the specific domains, 
+and generally certain public datasets are used to evaluate them, e.g., LC-QuAD 2.0 and QALD-9-PLUS.
+These systems are inapplicable when no data is available,
+although \gls{da} and synthetic data generation approaches show some limited success,
+this is mainly for much smaller domains than encountered in practice.
+
+% CNL
+Recent work has indicated the promising potential of \glspl{cnl} to further aid in this regard by reducing 
+training data requirements of the neural models used for the \gls{sp} task.
+However, current \glspl{llm} have limited or no knowledge of \glspl{cnl},
+because of the scarcity of such data in their training corpora.
+Fine-tuning \glspl{llm} for \gls{cnl} generation tasks still requires substantial datasets,
+which are typically unavailable in specialized domains.
+
+% RAG
+\gls{rag}-based architectures show promise for \gls{qa} in specialized domains,
+but in practice \gls{sp}, i.e., explicit query construction is often eschewed for answers
+which can complicate or make impossible downstream post-processing tasks that are
+essential to model reporting.
+
+% Frameworks
+After exploring these relevant \gls{nlp} techniques, a closer look was taken into particular frameworks
+with similar goals as model reporting, including some \gls{qa} systems and semantic parsers.
+Although these frameworks make use of the aforementioned techniques
+--- for example, using \glspl{cnl} to lower data requirements and \gls{rag} to incorporate non-parametric memory
+--- it is unclear how they can be adapted or emulated for \gls{mbse}.
+
+% Final
+The fundamental challenge for model reporting lies in the scarcity of domain-specific data,
+which is inherent to \gls{mbse}.
+Despite the exploration of various frameworks, none of the examined ones have successfully addressed this critical issue.
+Using the presented \gls{nlp} techniques this thesis solves the data scarcity issue in \gls{mbse},
+paving the path for model reporting.
+

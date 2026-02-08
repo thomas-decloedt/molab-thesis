@@ -1,0 +1,16 @@
+{ "head": {
+		"vars": [ "c1_id" , "c1_name" , "c1_mass" , "c2_id" , "c2_name" ]
+	},
+	"results": {
+		"bindings": [
+		{ 
+			"c1_id": { "type": "literal" , "value": "C.02.01" } ,
+			"c1_name": { "type": "literal" , "value": "Orbiter Power Subsystem" } ,
+			"c1_mass": { "type": "literal" , "datatype": "http://www.w3.org/2001/XMLSchema#double" , "value": "297.0" } ,
+			"c2_id": { "type": "literal" , "value": "C.02" } ,
+			"c2_name": { "type": "literal" , "value": "Orbiter Spacecraft" }
+		},
+		// Etc.
+		]
+	}
+}

@@ -1,0 +1,130 @@
+﻿\usetikzlibrary{
+	angles,
+	arrows,
+	arrows.meta,
+	automata,
+	calc,
+	decorations.pathreplacing,
+	fit,
+	positioning,
+	quotes,
+	shapes,
+	shapes.multipart,
+}
+
+
+\tikzstyle{block} = [rectangle, draw, text centered, rounded corners, minimum height=1cm, minimum width=4cm]
+\tikzstyle{arrow} = [draw, -latex']
+
+\makeatletter
+\tikzset{
+    database/.style={
+        path picture={
+            \draw (0, 1.5*\database@segmentheight) circle [x radius=\database@radius,y radius=\database@aspectratio*\database@radius];
+            \draw (-\database@radius, 0.5*\database@segmentheight) arc [start angle=180,end angle=360,x radius=\database@radius, y radius=\database@aspectratio*\database@radius];
+            \draw (-\database@radius,-0.5*\database@segmentheight) arc [start angle=180,end angle=360,x radius=\database@radius, y radius=\database@aspectratio*\database@radius];
+            \draw (-\database@radius,1.5*\database@segmentheight) -- ++(0,-3*\database@segmentheight) arc [start angle=180,end angle=360,x radius=\database@radius, y radius=\database@aspectratio*\database@radius] -- ++(0,3*\database@segmentheight);
+        },
+        minimum width=2*\database@radius + \pgflinewidth,
+        minimum height=3*\database@segmentheight + 2*\database@aspectratio*\database@radius + \pgflinewidth,
+    },
+    database segment height/.store in=\database@segmentheight,
+    database radius/.store in=\database@radius,
+    database aspect ratio/.store in=\database@aspectratio,
+    database segment height=0.1cm,
+    database radius=0.25cm,
+    database aspect ratio=0.35,
+}
+\makeatother
+
+\begin{tikzpicture}[auto, scale=1.0]
+
+% Question
+
+\node (nlq) {\small Question};
+
+% Text Embedder
+
+\node[block] at ([xshift=-3cm, yshift=-3cm]nlq) (text_emb) {\small Text Embedder};
+
+% Retriever
+
+\node[block] at ([xshift=3cm, yshift=-3cm]nlq) (retr) {\small Retriever};
+
+% GNN
+
+\node[block, below=2cm of retr] (gnn) {\small GNN};
+
+% Projector
+
+\node[block, below=0.5cm of gnn] (proj) {\small Projector};
+
+% Augmenter
+
+\node[draw, fit=(gnn)(proj), inner xsep=0.25cm, inner ysep=0.5cm] (aug) {};
+\node[below right] at (aug.north west) {\tiny Augmentation};
+
+% Index
+
+\node[block, right=2cm of retr] (index) {\small Index};
+
+% KG
+
+\node[block, right=2cm of index] (kg) {\small KG};
+
+% Linking
+
+\node[block, below=2.645cm of kg] (link) {\small Linking \& Execution};
+
+% Decoder
+
+\node[block, below=9.5cm of nlq, minimum width=10cm] (dec) {\small Decoder};
+
+% SQUALL2SPARQL
+
+\node[block, below=2.645cm of link, align=center] (s2s) {\small SQUALL2SPARQL};
+
+% Box: Text-to-Prelinked-SQUALL
+
+\node[draw, fit=(text_emb)(retr)(gnn)(proj)(dec)(index), inner xsep=0.5cm, inner ysep=1.5cm, align=left] (t2s) {};
+\node[below right] at (t2s.north west) {\small Text-to-Prelinked-SQUALL};
+
+% Output
+
+\node[block, right=2cm of link] (viz) {\small Visualisation};
+\node[block, above=0.25cm of viz] (proc) {\small Processing};
+\node[block, below=0.25cm of viz] (exp) {\small Explanation};
+
+\node[right=0.5cm of proc] (proc_out) {\small Tables};
+\node[right=0.5cm of viz] (viz_out) {\small Figures};
+\node[right=0.5cm of exp] (exp_out) {\small NLA};
+
+% Arrows Text-to-Prelinked-SQUALL
+
+\path[arrow] (nlq.south) --++ (0,-1.5) -| (text_emb.north);
+\path[arrow] (nlq.south) --++ (0,-1.5) -| (retr.north);
+
+\path[arrow] (retr.south) -- node[midway, right] {\small 5} (gnn.north);
+\path[arrow] (gnn.south) --++ (0, -0.1) -| (proj.north);
+
+\path[arrow] (proj.south) -- ([xshift=3cm]dec.north);
+\path[arrow] (text_emb.south) -- ([xshift=-3cm]dec.north);
+
+\path[arrow] (kg.west) -- (index.east);
+
+\path[arrow] (s2s.north) -- (link.south);
+\path[arrow] (kg.south) -- (link.north);
+
+\path[arrow] (dec.east) -- (s2s.west);
+
+\path[arrow] (link.east) --++ (1,0) |- (proc.west);
+\path[arrow] (link.east) -- (viz.west);
+\path[arrow] (link.east) --++ (1,0) |- (exp.west);
+
+\path[arrow] (proc.east) -- (proc_out.west);
+\path[arrow] (viz.east) -- (viz_out.west);
+\path[arrow] (exp.east) -- (exp_out.west);
+\path[arrow] (index.west) -- (retr.east);
+
+\end{tikzpicture}
+

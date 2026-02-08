@@ -1,0 +1,23 @@
+SELECT DISTINCT ?metric ?metric_lbl (max(?value) as ?score) WHERE {
+	{
+		SELECT ?metric ?metric_lbl ?value WHERE {
+			?dataset a <Dataset>;
+				rdfs:label ?dataset_lbl .
+			FILTER(STR(?dataset_lbl) = 'Walker, walk (DMControl100k)')
+			?benchmark <has_dataset> ?dataset;
+				<Has_evaluation> ?eval .
+			?eval <Has_value> ?value .
+			OPTIONAL {
+				?eval <Has_metric> ?metric .
+				?metric rdfs:label ?metric_lbl .
+			}
+			?cont <has_benchmark> ?benchmark .
+			OPTIONAL {
+				?cont <has_model> ?model .
+				?model rdfs:label ?model_lbl .
+			}
+		}
+		ORDER BY DESC(?value)
+	}
+}
+GROUP BY ?metric ?metric_lbl

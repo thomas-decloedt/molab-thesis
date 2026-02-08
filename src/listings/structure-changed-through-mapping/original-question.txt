@@ -1,0 +1,1 @@
+What are the titles and IDs of research papers that include a benchmark for the DDI extraction 2013 corpus dataset?

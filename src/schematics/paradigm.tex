@@ -1,0 +1,56 @@
+\begin{figure}[ht]
+
+	\centering
+
+	\begin{tikzpicture}[scale=0.65, transform shape]
+		\tikzset{node distance = 30pt and 50pt}
+		
+		\node[businessman,minimum size=1.5cm] (S) at (0,0) {Stakeholder};
+		\node[right=of S] (N) {\includesvg[width=1.5cm]{jupyter.svg}};
+		\draw[->] ([yshift=+2mm]S.east) -- ([yshift=+2mm]N.west) node[descr, midway, above] {Question};
+		\draw[<-] ([yshift=-2mm]S.east) -- ([yshift=-2mm]N.west) node[descr, midway, below] {Response};
+
+		\node[block, right=of N] (NLP) {Text-to-\glsentryshort{sparql}};
+		\draw[->] ([yshift=+6pt]N.east) -- ([yshift=+6pt]NLP.west) node[descr, midway, above] {Question};
+
+		\node[block, right=of NLP] (E) {Execution};
+		\draw[->] ([yshift=+6pt]NLP.east) -- ([yshift=+6pt]E.west) node[descr, midway, above] {\glsentryshort{sparql}};
+
+		% Downstream components
+
+		\node[block, above right=of E] (Exp) {Explanation};
+		\node[block, right=of E] (Tab) {Tabulation};
+		\node[block, below right=of E] (Viz) {Visualization};
+		\draw[->] ([yshift=+6pt]E.east) -- ++ (1.1,0) |-                                         ([yshift=+6pt]Exp.west);
+		\draw[->] ([yshift=+6pt]E.east) --               node[descr, above, fill=white]{Results} ([yshift=+6pt]Tab.west);
+		\draw[->] ([yshift=+6pt]E.east) -- ++ (1.1,0) |-                                         ([yshift=+6pt]Viz.west);
+
+		%\node[right=of Exp, label={below:ChatGPT}] (gpt) {\includesvg[width=1.25cm]{chatgpt.svg}};
+		%\draw[->] ([yshift=+2mm]Exp.east) -- ([yshift=+2mm]gpt.west) node[descr, midway, above] {prompt};
+		%\draw[<-] ([yshift=-2mm]Exp.east) -- ([yshift=-2mm]gpt.west) node[descr, midway, below] {\glsentryshort{nla}};
+
+		\node[input_output, right=of Tab] (R) {Response};
+		\draw[-] (Exp.east) -- ++ (0.8,0) |- ([yshift=+6pt]R.west);
+		\draw[->] ([yshift=+6pt]Tab.east) -- ([yshift=+6pt]R.west);
+		\draw[-] (Viz.east) -- ++ (0.8,0) |- ([yshift=+6pt]R.west);
+
+		\node[draw, dashed, fit=(NLP) (E) (Exp) (Tab) (Viz) (R), label={\gls{kgqa} Pipeline}, inner ysep=5pt] (P) {};
+
+		% New node in the upper left corner of P
+		\node[maninblack, minimum size=1.5cm, anchor=south east] at ([shift={(2cm, -0.5cm)}]P.north west) (A) {\glsentryshort{ai} Agent};
+
+		\node[below=of P, label={below:KG}] (KG) {\includesvg[width=1.5cm]{kg.svg}};
+		\draw[<->] (P.south) -- (KG.north);
+
+		%\path[->] (R.south) edge[bend left=50] (N.south);
+
+		\begin{scope}[on background layer]
+			\draw[->, densely dotted, thin]
+				([yshift=-6pt]R.west) -- ([yshift=-6pt]N.east)
+				node[descr, below] {};
+		\end{scope}
+
+	\end{tikzpicture}
+	\caption{Proof-of-concept implementation of the model reporting paradigm.}
+	\label{fig:pocImplementation}
+\end{figure}

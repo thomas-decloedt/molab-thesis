@@ -1,0 +1,10 @@
+SELECT DISTINCT ?dataset ?dataset_lbl WHERE {
+	?problem a <Problem>;
+		rdfs:label ?problem_lbl.
+	FILTER(STR(?problem_lbl) = 'Image Generation')
+	?dataset a <Dataset>;
+		rdfs:label ?dataset_lbl .
+	?benchmark <has_dataset> ?dataset .
+	?cont <has_benchmark> ?benchmark;
+		<has_research problem> ?problem .
+}

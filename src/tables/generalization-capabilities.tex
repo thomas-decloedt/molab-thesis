@@ -1,0 +1,31 @@
+\begin{table}[t]
+	\centering
+	\begin{tabular}{
+			l|S[table-format=2.0] S[table-format=2.0]|S[table-format=2.0] S[table-format=2.0]
+		}
+
+		\textbf{Templates}  
+							 & \multicolumn{2}{c|}{\textbf{Ground Truth Target Domain Data}}
+							 & \multicolumn{2}{c} {\textbf{Synthetic Target Domain Data}} \\
+							 & {$T$} & {$T \setminus \{2\}$} 
+							 & {$T$} & {$T \setminus \{2\}$} \\
+							 \hline
+	$T$          & 95  & 90             & 78  & 77 \\
+	\hline
+	1            & 95  & 92             & 93  & 85 \\
+	2            & 98  & \underline{40} & 42  & 36 \\
+	3            & 98  & 91             & 85  & 85 \\
+	4            & 90  & 96             & 47  & 65 \\
+	5            & 99  & 99             & 89  & 93 \\
+	6            & 50  & 76             & 35  & 40 \\
+	7            & 94  & 95             & 81  & 64 \\
+	8            & \text{N/A} & \text{N/A} & \text{N/A} & \text{N/A} \\
+
+\end{tabular}
+
+\caption{
+	Evaluation of the domain expert's ability to generalize on the text-to-\glsentryshort{squall} task using the \glsentryshort{bleu} score,
+	expressed as percentages, for different training datasets.
+}
+\label{table:generalization_capabilities_bleu}
+\end{table}

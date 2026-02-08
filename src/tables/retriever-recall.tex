@@ -1,0 +1,33 @@
+\begin{table}[t]
+
+	\centering
+	\setlength{\tabcolsep}{3pt} % Default is 6pt
+
+	\begin{tabular}{l|SS|SS}
+		\textbf{Parameters}
+		& \textbf{Average \# Vertices}
+		& \textbf{Average \# Edges}
+		& \textbf{Average Vertex Recall}
+		& \textbf{Average Edge Recall} \\
+		\hline
+		(5, 5, 0.1)       & 26   & 28    & 0.00  & 3.57 \\
+		(5, 5, 0.5)       & 16   & 15    & 0.00  & 3.57 \\
+		(10, 10, 0.1)     & 49   & 56    & 15.98 & 26.36 \\
+		(10, 10, 0.5)     & 35   & 37    & 3.57  & 16.07 \\
+		(30, 30, 0.1)     & 197  & 255   & 10.71 & 42.86 \\
+		(30, 30, 0.5)     & 104  & 115   & 27.82 & 44.19 \\
+		(100, 100, 0.1)   & 739  & 1150  & 21.43 & 78.57 \\
+		(100, 100, 0.5)   & 386  & 477   & 42.72 & 65.08 \\
+		(1000, 1000, 0.1) & 7316 & 11341 & 90.41 & 95.63 \\
+		(1000, 1000, 0.5) & 3126 & 5166  & 88.75 & 95.23 \\
+
+	\end{tabular}
+
+	\caption{
+		The average number of vertices and edges,
+		and the average vertex and edge recall (expressed as percentages),
+		in function of \glsentryshort{pcst} parameters.
+	}
+	\label{table:retrieverRecall}
+
+\end{table}

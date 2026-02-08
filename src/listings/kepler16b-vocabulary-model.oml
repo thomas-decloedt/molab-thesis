@@ -1,0 +1,16 @@
+@rdfs:label "Mission" 
+concept Mission :> base:IdentifiedElement 
+
+@rdfs:label "Objective" 
+concept Objective :> base:IdentifiedElement 
+
+@rdfs:label "Pursues" 
+@dc:^description "A Mission pursues >=0 Objectives." 
+relation entity Pursues [ 
+	 from Mission 
+	 to Objective  
+	 forward pursues  
+	 reverse isPursuedBy 
+	 asymmetric 
+	 irreflexive 
+]

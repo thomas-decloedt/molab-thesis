@@ -1,0 +1,5 @@
+SELECT ?paperTitle ?codeLink WHERE {
+	 ?paper orkgp:HAS_MODEL orkg:R123481 .
+	 ?paper rdfs:label ?paperTitle .
+	 ?paper orkgp:HAS_SOURCE_CODE ?codeLink .
+}

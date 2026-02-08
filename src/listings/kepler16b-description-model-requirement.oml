@@ -1,0 +1,4 @@
+instance lander-ground-datasystem-command-to-spacecraft : mission:Requirement [
+	base:hasIdentifier "R.04"
+	mission:specifies interfaces:lander-ground-datasystem.presents.commandOut
+]

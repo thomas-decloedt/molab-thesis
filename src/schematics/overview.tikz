@@ -1,0 +1,85 @@
+\input{src/schematics/tikzstyles}
+\tikzstyle{placeholder} = [rectangle, minimum width=1cm, minimum height=0.75cm]
+
+\makeatletter
+\tikzset{
+    database/.style={
+        path picture={
+            \draw (0, 1.5*\database@segmentheight) circle [x radius=\database@radius,y radius=\database@aspectratio*\database@radius];
+            \draw (-\database@radius, 0.5*\database@segmentheight) arc [start angle=180,end angle=360,x radius=\database@radius, y radius=\database@aspectratio*\database@radius];
+            \draw (-\database@radius,-0.5*\database@segmentheight) arc [start angle=180,end angle=360,x radius=\database@radius, y radius=\database@aspectratio*\database@radius];
+            \draw (-\database@radius,1.5*\database@segmentheight) -- ++(0,-3*\database@segmentheight) arc [start angle=180,end angle=360,x radius=\database@radius, y radius=\database@aspectratio*\database@radius] -- ++(0,3*\database@segmentheight);
+        },
+        minimum width=2*\database@radius + \pgflinewidth,
+        minimum height=3*\database@segmentheight + 2*\database@aspectratio*\database@radius + \pgflinewidth,
+    },
+    database segment height/.store in=\database@segmentheight,
+    database radius/.store in=\database@radius,
+    database aspect ratio/.store in=\database@aspectratio,
+    database segment height=0.1cm,
+    database radius=0.25cm,
+    database aspect ratio=0.35,
+}
+\makeatother
+
+\begin{tikzpicture}[auto, scale=1.0]
+
+\node (nlq) {\small Question};
+
+% Text-to-prelinked-SQUALL
+
+\node[placeholder, left=0.25cm of nlq] (inv_l) {};
+\node[placeholder, right=0.25cm of nlq] (inv_r) {};
+
+\node[placeholder, below=3cm of inv_l] (inv_l_2) {};
+\node[block, below=1cm of inv_l_2, minimum height=1.0cm, minimum width=2cm, fill=blue!20] (text_emb) {\small Text Embedder};
+
+\node[block, below=1.5cm of inv_r] (retr) {\small Retriever};
+
+\node[block, below=1cm of retr, minimum height=0.45cm, fill=red!20] (gnn) {\small GNN};
+\node[block, below=0.25cm of gnn, minimum height=0.45cm, fill=red!20] (proj) {\small Projector};
+\node[draw, fit=(gnn)(proj), inner sep=10, align=left] (aug) {};
+\node[below right] at (aug.north west) {\small Augmentation};
+
+\node[block, below=4cm of nlq, minimum width=5cm, fill=blue!20] (dec) {\small Decoder};
+
+\path[arrow] (nlq.south) --++ (0,-0.25) -| (text_emb.north);
+\path[arrow] (nlq.south) --++ (0,-0.25) -| (retr.north);
+
+\path[arrow] (text_emb.south) --++ (0,-0.5cm) node[midway, right] {\small 4};
+
+\path[arrow] (retr.south) -- node[midway, right] {\small 5} (gnn.north);
+\path[arrow] (gnn.south) --++ (0, -0.1) -| (proj.north);
+\path[arrow] (proj.south) --++ (0,-0.5cm) node[midway, right] {\small 6};
+
+\node[draw, fit=(text_emb)(retr)(gnn)(proj)(dec), inner sep=0.5cm, align=left] (t2s) {};
+\node[below right] at (t2s.north west) {\small Text-to-Prelinked-SQUALL};
+
+% Text-to-SPARQL
+
+\node[block, right=1.5cm of dec, text width=3cm, minimum width=3.5cm, align=center] (s2s) {\small SQUALL2SPARQL};
+\path[arrow] (dec.east) -- (s2s.west);
+
+% Linking
+
+\node[block, right=1cm of s2s] (link) {\small Linking};
+\path[arrow] (s2s.east) -- (link.west);
+
+% Index
+
+\node[database, above=2.75cm of s2s, label=below:Index] (index) {};
+\path[arrow] (index.west) -- (retr.east);
+
+% KG
+
+\node[block, right=5.75cm of retr] (kg) {\small KG};
+\path[arrow] (kg.west) -- (index.east);
+\path[arrow] (kg.south) -- (link.north);
+
+% Box
+
+\node[draw, fit=(t2s)(index)(kg)(s2s)(link), inner sep=0.5cm, align=left] (text2sparql) {};
+\node[below right] at (text2sparql.north west) {\small Text-to-SPARQL};
+
+\end{tikzpicture}
+

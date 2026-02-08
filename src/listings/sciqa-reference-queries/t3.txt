@@ -1,0 +1,1 @@
+A <Dataset> is a <has_dataset> of a thing X and has a rdfs:label whose string matches 'Habitat 2020 Point Nav test-std' and a thing Y is a <has_evaluation> of X and if defined, what is a <has_metric> of Y and has a rdfs:label?

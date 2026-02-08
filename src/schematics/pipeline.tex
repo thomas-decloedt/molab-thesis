@@ -1,0 +1,36 @@
+\begin{figure}[ht]
+	\centering
+	\begin{tikzpicture}[scale=0.5, transform shape]
+		\tikzset{node distance = 30pt and 45pt}
+
+		\node[input_output]              (Req) {Request};
+		\node[block, right=of Req]       (DE)  {Domain Expert};
+		\node[block, right=of DE]        (S2S) {Translator};
+		\node[block, right=of S2S]       (L)   {Linker};
+		\node[block, right=of L]         (E)   {Execution};
+		\node[block, right=of E]         (RH)  {Result Handling};
+		\node[input_output, right=of RH] (Res) {Response};
+
+		\draw[->] (Req) -- (DE)  node[descr] {Question};
+		\draw[->] (DE)  -- (S2S) node[descr] {\glsentryshort{squall}};
+		\draw[->] (S2S) -- (L)   node[descr] {\glsentryshort{sparql}};
+		\draw[->] (L)   -- (E)   node[descr] {Query};
+		\draw[->] (E)   -- (RH)  node[descr] {Results};
+		\draw[->] (RH)  -- (Res) node[descr] {};
+
+		\begin{scope}[on background layer]
+			\draw[->, densely dotted, thin]
+				(Req.east) -- ++ (20pt,0) |- ([yshift=-11pt]RH.west)
+				node[descr, below] {Config};
+		\end{scope}
+
+		\node[draw, dashed, fit=(DE) (S2S) (L), label={Text-to-\gls{sparql}}] (T2S) {};
+
+	\end{tikzpicture}
+	\caption{Pipeline;
+		The request config determines the target \gls{kg} and determines the returned response,
+		e.g., visualization.
+	}
+	\label{fig:pipeline}
+\end{figure}
+

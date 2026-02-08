@@ -1,0 +1,1 @@
+Which <Dataset> has a rdfs:label and is a <has_dataset> of a <has_benchmark> of a thing that has <has_research problem> a <Problem> that has a rdfs:label that is 'Image Generation'?

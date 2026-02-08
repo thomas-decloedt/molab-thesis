@@ -1,0 +1,31 @@
+\input{src/schematics/tikzstyles}
+\tikzstyle{placeholder} = [rectangle, minimum width=1cm, minimum height=0.75cm]
+
+\begin{tikzpicture}[auto, scale=1.0]
+
+\node (nlq) {\small Question};
+
+\node[placeholder, left=0.25cm of nlq] (inv_l) {};
+\node[placeholder, right=0.25cm of nlq] (inv_r) {};
+
+\node[placeholder, below=0.5cm of inv_l] (inv_l_2) {};
+\node[block, below=0.5cm of inv_l_2, minimum height=1.0cm, minimum width=2cm, fill=blue!20] (text_emb) {\small Text Embedder};
+
+\node[block, below=0.5cm of inv_r] (retr) {\small Retriever};
+\node[block, below=0.5cm of retr, minimum height=0.45cm, fill=red!20] (gnn) {\small GNN};
+\node[block, below=0.1cm of gnn, minimum height=0.45cm, fill=red!20] (proj) {\small Projector};
+
+\node[block, below=3.45cm of nlq, minimum width=5cm, fill=blue!20] (dec) {\small Decoder};
+\node[below=0.5cm of dec] (dec_out) {\small SQUALL};
+
+\path[arrow] (nlq.south) --++ (0,-0.25) -| (text_emb.north);
+\path[arrow] (nlq.south) --++ (0,-0.25) -| (retr.north);
+
+\path[arrow] (text_emb.south) --++ (0,-0.5cm) node[midway, right] {\small 4};
+
+\path[arrow] (retr.south) -- node[midway, right] {\small 5} (gnn.north);
+\path[arrow] (proj.south) --++ (0,-0.5cm) node[midway, right] {\small 6};
+
+\path[arrow] (dec.south) -- (dec_out.north);
+
+\end{tikzpicture}

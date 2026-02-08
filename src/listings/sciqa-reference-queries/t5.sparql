@@ -1,0 +1,20 @@
+SELECT DISTINCT ?model ?model_lbl WHERE {
+	?metric a <Metric>;
+		rdfs:label ?metric_lbl .
+	FILTER(STR(?metric_lbl) = 'Score') {
+		SELECT ?model ?model_lbl WHERE {
+			?dataset a <Dataset>;
+				rdfs:label ?dataset_lbl .
+			FILTER(STR(?dataset_lbl) = 'Atari 2600 Defender')
+			?benchmark <has_dataset> ?dataset;
+				<Has_evaluation> ?eval .
+			?eval <Has_value> ?value;
+				<Has_metric> ?metric .
+			?cont <has_benchmark> ?benchmark;
+				<has_model> ?model .
+			?model rdfs:label ?model_lbl .
+		}
+		ORDER BY DESC(?value)
+		limit 1
+	}
+}

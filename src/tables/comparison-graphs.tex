@@ -1,0 +1,49 @@
+\begin{table*}[h]
+	\centering
+
+	\begin{tabular}{l|SSSS|r}
+
+		\textbf{Dataset}
+		& \textbf{\# Questions} & \textbf{\# Graphs} & \textbf{Average \# Vertices} & \textbf{Average \# Edges} & \textbf{Source} \\
+
+		\hline
+		
+		\textbf{ExplaGraphs} & 2766  & 2766  & 5       & 4    & \cite{heGRetrieverRetrievalAugmentedGeneration2024} \\
+		\textbf{SceneGraphs} & 10000 & 10000 & 19      & 68   & \cite{heGRetrieverRetrievalAugmentedGeneration2024} \\
+		\textbf{WebQSP}      & 4737  & 4737  & 1371    & 4252 & \cite{heGRetrieverRetrievalAugmentedGeneration2024, luoReasoningGraphsFaithful2024} \\
+		\textbf{SciQA}       & 2565  & 1     & 180184  & 6888 & \cite{auerSciQAScientificQuestion2023, auerSciQABenchmarkDataset2023} \\
+
+	\end{tabular}
+
+	\caption{
+		Summary of datasets with key statistics including the number of questions, graphs, vertices, edges, and their sources.
+	}
+
+	\label{table:comparisonDatasetsSamples}
+\end{table*}
+
+\begin{table*}[h]
+	\centering
+
+	\begin{tabular}{l|rrrr|r}
+
+		\textbf{Dataset}
+		& \textbf{\glsentrylong{kg}} & \textbf{\# Triples} & \textbf{\# Vertices} & \textbf{\# Edges} & \textbf{Source} \\
+
+		\hline
+		
+		\textbf{ExplaGraphs} & N/A         & N/A           & N/A           & N/A        & \cite{heGRetrieverRetrievalAugmentedGeneration2024} \\
+		\textbf{SceneGraphs} & N/A         & N/A           & N/A           & N/A        & \cite{heGRetrieverRetrievalAugmentedGeneration2024} \\
+		\textbf{WebQSP}      & Freebase    & 126M          & 88M           & 20K        & \cite{heGRetrieverRetrievalAugmentedGeneration2024, luoReasoningGraphsFaithful2024} \\
+		\textbf{SciQA}       & \gls{orkg}  & \num{1133217} & \num{180184}  & \num{6888} & \cite{auerSciQAScientificQuestion2023, auerSciQABenchmarkDataset2023} \\
+
+	\end{tabular}
+
+	\caption{
+		Overview of datasets and their associated (\glsentrylongpl{kg}),
+		including triples, vertices, edges, and source references.
+		\glsentryshort{orkg} version: February 14, 2023.
+	}
+
+	\label{table:comparisonDatasetsKnowledgeGraphs}
+\end{table*}

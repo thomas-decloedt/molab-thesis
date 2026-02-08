@@ -1,0 +1,9 @@
+SELECT DISTINCT ?paper ?paper_lbl WHERE {
+	?dataset a <Dataset>;
+		rdfs:label ?dataset_lbl .
+	FILTER(STR(?dataset_lbl) = 'DDI extraction 2013 corpus')
+	?benchmark <has_dataset> ?dataset .
+	?cont <has_benchmark> ?benchmark.
+	?paper <has_contribution> ?cont;
+		rdfs:label ?paper_lbl .
+}

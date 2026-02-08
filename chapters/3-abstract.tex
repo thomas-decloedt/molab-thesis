@@ -1,0 +1,57 @@
+\chapter*{Abstract}
+\chaptermark{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}  
+
+%This chapter should contain three things.
+
+%\begin{itemize}
+%    \item A copy of all the information on the title page of your master's thesis. This includes things like the name of your master's thesis and your advisors.
+%    \item A one-paragraph description of your master's thesis. This should be 15 to 20 lines long. This should include the context of your master's thesis, the problem statement of your master's thesis. The results of your master's thesis, and the evaluation of the work.
+%    \item Five keywords that describe the subject best.
+%\end{itemize}
+%
+%The chapter should be one page at most.
+
+\textbf{Title:} Mo-Lab: Interactive model reporting and analysis in openCAESAR through natural language processing and SPARQL integration
+
+\textbf{Author:} Thomas Decloedt
+\textbf{Student Number:} 01808629
+\textbf{Supervisors:} Prof. Dr. Mohammad Hamdaqa, Prof. Dr. ir. Chris Develder 
+\textbf{Degree:} Master of Science in Computer Science Engineering
+\textbf{Academic Year:} 2024-2025
+
+% Context
+The task of generating reports in \glsentrylong{mbse} often demands significant effort and technical expertise,
+creating barriers resulting in inflexibility.
+Recent advancements in \glsentryshort{ai}, particularly in \glsentrylong{nlp},
+offer promising opportunities to tackle these challenges by facilitating more interactive and less technical approaches.
+
+% Problem statement
+A significant challenge in applying neural approaches to \gls{mbse} lies in the scarcity of datasets available
+in these specialized domains.
+This thesis addresses the issue of data scarcity primarily through domain adaptation,
+which leverages data from other domains to benefit specialized \gls{mbse} contexts.
+Additional techniques employed to mitigate data limitations include the use of \glsentrylong{cnl},
+which reduces the training data requirements,
+and \glsentrylong{rag}, which integrates unseen domain information to enhance performance and adaptability.
+
+% Results
+The experimental results demonstrate that data scarcity can be effectively addressed through \glsentrylong{da} and
+\glsentrylong{cnl}.
+Using high-quality synthetic data resulted in excellent performance, even on a challenging benchmark.
+However, the effectiveness of \glsentrylong{rag} remains inconclusive,
+largely due to limitations inherent to the benchmark used for evaluation.
+Additionally, as with related approaches, challenges persist regarding the generalizability of the proposed method.
+Nonetheless, the results reveal promising potential, warranting further exploration.
+
+% Evaluation
+This thesis contributes to the field of \gls{mbse} by introducing an interactive model reporting paradigm,
+demonstrated through the proof-of-concept implementation, Mo-Lab.
+The approach addresses the challenges of data scarcity often encountered in specialized domains by designing an
+architecture tailored to these constraints.
+Its evaluation on a representative domain underscores its feasibility and effectiveness.
+Finally, this work demonstrates promising practical applications,
+paving the way for more accessible and flexible model reporting in \gls{mbse}.
+
+\textbf{Keywords:} Model-Based Systems Engineering, openCAESAR, text-to-SPARQL, domain adaptation, data scarcity
+

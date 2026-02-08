@@ -1,0 +1,16 @@
+\begin{lstlisting}[
+	language=SPARQL,
+	caption={\glsentrylong{s2s} example.},
+	label={lst:squall_example},
+	basicstyle=\ttfamily\footnotesize,
+	]
+	SQUALL:
+	What is the name of the author-s of PaperX?
+
+	SPARQL:
+	SELECT DISTINCT ?x1 WHERE {
+		:PaperX :author ?x2 .
+		?x2 :name ?x1 .
+	}
+\end{lstlisting}
+

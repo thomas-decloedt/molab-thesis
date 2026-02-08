@@ -1,0 +1,6 @@
+SELECT ?quantity WHERE {
+	?crater rdf:type orkgc:Crater .
+	?crater rdfs:label 'Elorza crater' .
+	?crater orkgp:P31 ?iron_oxide_discoveries .
+	?iron_oxide_discoveries orkgp:P2067 ?quantity .
+}

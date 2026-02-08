@@ -1,0 +1,1 @@
+What has a rdfs:label and is a <has_research problem> of a thing that has a <has_benchmark> and is a <has_contribution> of a thing that has <has_research field> a <ResearchField> that has a rdfs:label that is 'Natural Language Processing'?

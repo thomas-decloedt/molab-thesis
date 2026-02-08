@@ -1,0 +1,89 @@
+\begin{lstlisting}[
+	caption={Kepler16b vocabulary, mission and objective \cite{elaasarOMLTutorials2023}.},
+	label={lst:keplerOntologyVoc},
+	]
+
+	vocabulary <http://example.com/tutorial2/vocabulary/mission#> as mission {
+		
+		extends <http://www.w3.org/2000/01/rdf-schema#> as rdfs
+		extends <http://example.com/tutorial2/vocabulary/base#> as base
+		
+		@rdfs:comment "An Objective represents a specific interest that one or more stakeholders have in the successful execution of a mission."
+		concept Objective < base:IdentifiedThing, base:AggregatedThing [
+			restricts all base:aggregates to Objective
+			restricts all base:isAggregatedIn to Objective
+		]
+		
+		@rdfs:comment "A Mission pursues Objectives."
+		concept Mission < base:IdentifiedThing
+		
+		@rdfs:comment "A Mission pursues zero or more Objectives."
+		relation entity Pursues [
+			from Mission
+			to Objective
+			forward pursues
+			reverse isPursuedBy
+			asymmetric
+			irreflexive
+		]
+
+\end{lstlisting}
+
+\begin{lstlisting}[
+	caption={Kepler16b description, objectives \cite{elaasarOMLTutorials2023}.},
+	label={lst:keplerOntologyDesc},
+	]
+	description <http://example.com/tutorial2/description/objectives#> as objectives {
+
+		uses <http://example.com/tutorial2/vocabulary/base#> as base
+		uses <http://example.com/tutorial2/vocabulary/mission#> as mission
+
+		instance characterize-atmosphere : mission:Objective [
+			base:hasIdentifier "O.01"
+			base:hasCanonicalName "Characterize the atmosphere of Kepler16b"
+			base:aggregates characterize-liquid-ocean
+		]
+\end{lstlisting}
+
+\begin{lstlisting}[
+	caption={Kepler16b vocabulary, requirement \cite{elaasarOMLTutorials2023}.},
+	label={lst:keplerOntologyVocReq},
+	]
+	@rdfs:comment "SpecifiedThing is something that isSpecifiedBy a Requirement"
+	aspect SpecifiedThing
+
+	@rdfs:comment "Presents is a relation that can be specified by a requirement."
+	ref relation entity Presents < SpecifiedThing
+
+	@rdfs:comment "A Requirement specifies that something must be true about something."
+	concept Requirement < base:IdentifiedThing
+
+	@rdfs:comment "A Requirement specifies zero or more SpecifiedThings."
+	relation entity Specifies [
+		from Requirement
+		to SpecifiedThing
+		forward specifies
+		reverse isSpecifiedBy
+		functional
+		asymmetric
+		irreflexive
+	]
+\end{lstlisting}
+
+\begin{lstlisting}[
+	caption={Kepler16b description, interface \cite{elaasarOMLTutorials2023}.},
+	label={lst:keplerInterface},
+	]
+
+	description <http://example.com/tutorial2/description/interfaces#> as interfaces {
+
+		uses <http://example.com/tutorial2/vocabulary/base#> as base
+		uses <http://example.com/tutorial2/vocabulary/mission#> as mission
+		extends <http://example.com/tutorial2/description/components#> as components
+
+		instance orbiter-ground-data-system.commandOut : mission:Interface [
+			base:hasIdentifier "I.03"
+			base:hasCanonicalName "Command Out"
+		]
+\end{lstlisting}
+

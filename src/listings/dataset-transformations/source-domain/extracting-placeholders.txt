@@ -1,0 +1,5 @@
+NNQT:
+What is the {periodical literature} for {mouthpiece} of {Delta Air Lines}?
+
+Placeholders:
+["periodical_literature", "mouthpiece", "Delta_Air_Lines"]

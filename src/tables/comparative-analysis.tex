@@ -1,0 +1,18 @@
+\begin{table}[t]
+	\centering
+	\begin{tabular}{l|S[table-format=2.2]}
+
+		\textbf{Setup}                                      & \textbf{BLEU} \\
+		\hline                                                                             
+		T5-base, fine-tuned                                 & 96.31         \\
+		GPT2-large, fine-tuned                              & 95.04         \\
+		Dolly-v2-3b, similarity-based \glsentryshort{fsl}   & 80.15         \\
+		GPT-3.5-turbo, similarity-based \glsentryshort{fsl} & 95.71         \\
+                                                           
+	\end{tabular}                                           
+	\caption{
+		\glsentryshort{bleu} scores set on the SciQA benchmark by different \glsentryshortpl{llm} \cite{lehmannLargeLanguageModels2024}.
+	}
+	\label{table:comparativeAnalysis}
+\end{table}
+

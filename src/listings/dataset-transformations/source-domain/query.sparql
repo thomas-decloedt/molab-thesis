@@ -1,0 +1,4 @@
+SELECT DISTINCT ?obj WHERE {
+	wd:Q188920 wdt:P2813 ?obj .
+	?obj wdt:P31 wd:Q1002697 .
+}

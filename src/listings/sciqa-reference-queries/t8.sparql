@@ -1,0 +1,10 @@
+SELECT DISTINCT ?problem ?problem_lbl WHERE {
+	?rf a <ResearchField>;
+		rdfs:label ?rf_label .
+	FILTER(STR(?rf_label) = 'Natural Language Processing')
+	?paper <has_research field> ?rf;
+		<has_contribution> ?cont .
+	?cont <has_benchmark> ?benchmark;
+		<has_research problem> ?problem .
+	?problem rdfs:label ?problem_lbl .
+}

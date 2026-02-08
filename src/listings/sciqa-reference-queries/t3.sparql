@@ -1,0 +1,11 @@
+SELECT DISTINCT ?metric ?metric_lbl WHERE {
+	?dataset a <Dataset>;
+		rdfs:label ?dataset_lbl .
+	FILTER(STR(?dataset_lbl) = 'Habitat 2020 Point Nav test-std')
+	?benchmark <has_dataset> ?dataset;
+		<Has_evaluation> ?eval .
+	OPTIONAL {
+		?eval <Has_metric> ?metric .
+		?metric rdfs:label ?metric_lbl.
+	}
+}

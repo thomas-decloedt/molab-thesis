@@ -1,0 +1,2 @@
+Projecting embeddings across domain: satoVocabularyAdaptationDomain2020
+Transductive transfer learning: panSurveyTransferLearning2010

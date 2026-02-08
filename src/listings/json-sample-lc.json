@@ -1,0 +1,11 @@
+{
+	"NNQT_question": "What is the {periodical literature} for {mouthpiece} of {Delta Air Lines}",
+	"paraphrased_question": "What is Delta Air Line's periodical literature mouthpiece?",
+	"question": "What periodical literature does Delta Air Lines use as a mouthpiece?",
+	"sparql_wikidata": "SELECT DISTINCT ?obj WHERE { wd:Q188920 wdt:P2813 ?obj . ?obj wdt:P31 wd:Q1002697 . }",
+	"template": "<S P ?O ; ?O instanceOf Type>",
+	"URIs": ["wd:Q188920", "wdt:P2813", "wdt:P31", "wd:Q1002697"],
+	"placeholders": ["periodical_literature", "mouthpiece", "Delta_Air_Lines"],
+	"placeholder_graph_pattern": "SELECT DISTINCT ?obj WHERE { <Delta_Air_Lines> <mouthpiece> ?obj . ?obj <instance_of> <periodical_literature> . }",
+	"squall": "What is a <mouthpiece> of <Delta_Air_Lines> and has <instance_of> <periodical_literature>?"
+}
